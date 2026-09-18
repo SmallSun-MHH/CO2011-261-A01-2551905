@@ -101,3 +101,4 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     json_path = os.path.join(current_dir, 'instance_slice.json') 
     solve_data_slice(json_path)
+    
