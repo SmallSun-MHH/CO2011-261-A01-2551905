@@ -1,7 +1,7 @@
 """
 Bang Logic_to_LP.py — Cầu nối Logic -> LP (1.3, Module 1)
 Input: biến quyết định x[i, j] đã được định nghĩa ở Module 2. 
-Output: (các) ràng buộc pulp có thể add thẳng vào mô hình ILP bằng `model += constraint`.
+Output: ràng buộc pulp có thể add thẳng vào mô hình ILP bằng `model += constraint`.
 
 Người làm: Nguyễn Quang Phúc 2551920
 """
@@ -83,5 +83,5 @@ if __name__ == "__main__":
 
     result = {i: int(x[i, shift].value()) for i in invigilators}
     print("LP result:", result)
-    assert result == {"CB1": 0, "CB2": 1}, "Khong khop voi ket qua SAT trong brief!"
-    print("OK - khop voi ket qua SAT (a1=0, a2=1) trong Worked Example cua brief.")
+    assert result == {"CB1": 0, "CB2": 1}, "Khong khop voi ket qua SAT!"
+    print("OK - khop voi ket qua SAT (a1=0, a2=1) trong Worked Example.")
