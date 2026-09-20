@@ -40,6 +40,13 @@ def main():
         m1_result = run_m1_cnf(instance)
 
         # --- Bước 1.3: Logic → LP bridge (worked example) ---
+        # --- Bước 1.2b: Lõi bất khả thỏa TỐI THIỂU (deletion-based MUS) ---
+        import subprocess
+        rc = subprocess.run([sys.executable, "m1_logic/unsat_core.py",
+                             "data/instance_slice.json"], cwd=repo_root).returncode
+        if rc != 0:
+            sys.exit("[run_all] LOI: m1_logic/unsat_core.py that bai")
+
         from m1_logic.bang_logic_to_lp import (
             availability_constraint, exact_capacity,
         )

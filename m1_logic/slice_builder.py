@@ -90,7 +90,11 @@ def build_instance(rows: list[dict], target_date: str, seed: int) -> dict:
     invigilators: set[str] = set()
 
     for row in day_rows:
-        sid = row["MS Ca thi"].strip()
+        # Mot "MS Ca thi" co the dien ra DONG THOI o ca hai co so
+        # (vd 20260528_3 luc 13g00 o Co so 1 va Co so 2). Don vi phan cong
+        # thuc te la (ca, co so): mot nguoi khong the o hai noi cung gio.
+        _campus = row.get("Co so", row.get("Cơ sở", "")).strip()
+        sid = f'{row["MS Ca thi"].strip()}@{_campus}' if _campus else row["MS Ca thi"].strip()
         cb_id = row["MS của CÁN BỘ COI THI"].strip()
         hour_str = row["GIỜ"].strip()
         campus = row.get("Cơ sở", "").strip()
@@ -122,7 +126,11 @@ def build_instance(rows: list[dict], target_date: str, seed: int) -> dict:
 
     baseline = []
     for row in day_rows:
-        sid = row["MS Ca thi"].strip()
+        # Mot "MS Ca thi" co the dien ra DONG THOI o ca hai co so
+        # (vd 20260528_3 luc 13g00 o Co so 1 va Co so 2). Don vi phan cong
+        # thuc te la (ca, co so): mot nguoi khong the o hai noi cung gio.
+        _campus = row.get("Co so", row.get("Cơ sở", "")).strip()
+        sid = f'{row["MS Ca thi"].strip()}@{_campus}' if _campus else row["MS Ca thi"].strip()
         cb_id = row["MS của CÁN BỘ COI THI"].strip()
         baseline.append([cb_id, sid])
 

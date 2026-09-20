@@ -197,8 +197,10 @@ def solve_unsat_core(data: dict) -> dict:
     Quy trình:
       1. Mã hóa CNF, mỗi nhóm ràng buộc gắn một selector literal.
       2. Gọi solver.solve(assumptions=all_selectors).
-      3. Nếu UNSAT → solver.get_core() trả về tập con tối thiểu
-         của các assumptions bị mâu thuẫn.
+      3. Nếu UNSAT → solver.get_core() trả về MỘT tập con bất khả thỏa
+         của các assumptions. LƯU Ý: tập này KHÔNG bảo đảm tối thiểu.
+         Lõi tối thiểu (MUS) cùng phép chứng minh tính tối thiểu nằm ở
+         m1_logic/unsat_core.py (deletion-based MUS).
       4. Ánh xạ core literals ngược về tên nhóm ràng buộc.
 
     Returns

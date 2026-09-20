@@ -1,0 +1,45 @@
+{
+  "instance": "data/instance_slice.json",
+  "team_id": "CO2011-261-A01-2551905",
+  "lat_nguyen_ban_sat": true,
+  "phep_siet": {
+    "pool": 14,
+    "maxload": null,
+    "tong_giam_thi": 18,
+    "nguong_N_sao": 14
+  },
+  "busy_suy_ra_tu_baseline": 15,
+  "satisfiable": false,
+  "core_tho": [
+    "AVAIL[CB010@20260528_3@Cơ sở 2]",
+    "CAP_GE[20260528_3@Cơ sở 2 cần >= 14]"
+  ],
+  "unsat_core": [
+    "AVAIL[CB010@20260528_3@Cơ sở 2]",
+    "CAP_GE[20260528_3@Cơ sở 2 cần >= 14]"
+  ],
+  "ho_rang_buoc": {
+    "AVAIL[CB010@20260528_3@Cơ sở 2]": "availability",
+    "CAP_GE[20260528_3@Cơ sở 2 cần >= 14]": "capacity"
+  },
+  "kiem_chung_toi_thieu": [
+    {
+      "bo_ra": null,
+      "ket_qua": "UNSAT",
+      "mong_doi": "UNSAT",
+      "dat": true
+    },
+    {
+      "bo_ra": "AVAIL[CB010@20260528_3@Cơ sở 2]",
+      "ket_qua": "SAT",
+      "mong_doi": "SAT",
+      "dat": true
+    },
+    {
+      "bo_ra": "CAP_GE[20260528_3@Cơ sở 2 cần >= 14]",
+      "ket_qua": "SAT",
+      "mong_doi": "SAT",
+      "dat": true
+    }
+  ]
+}
