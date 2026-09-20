@@ -8,7 +8,8 @@
     "num_invigilators": 18,
     "num_shifts": 5,
     "num_assignments": 21,
-    "total_capacity": 21
+    "total_capacity": 21,
+    "seed_raw": "43003334"
   },
   "invigilators": [
     "CB003",

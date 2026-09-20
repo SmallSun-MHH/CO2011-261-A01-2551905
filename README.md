@@ -26,3 +26,9 @@ Push a tagged commit `week-01 … week-14` with a `CHECKPOINTS.md` entry; tag mi
 `python run_all.py --seed $(cat data/seed.txt)` must reproduce every number in your report from a clean clone.
 
 Declare any AI-tool use in this README. Full rules, rubric (Appendix B), and the red **CRITICAL** items are in the brief.
+
+## Khai báo sử dụng AI
+Nhóm có sử dụng công cụ AI (Google Antigravity IDE) hỗ trợ code và viết tài liệu, tuân thủ các quy tắc của môn học.
+
+## Soft Constraints Weights
+Trọng số sinh từ mã nhóm: `[0.71, 1.62, 1.33]`

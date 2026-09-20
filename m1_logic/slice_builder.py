@@ -193,6 +193,62 @@ def build_instance(rows: list[dict], target_date: str, seed: int) -> dict:
     return instance
 
 
+def run_slice_builder(
+    seed_raw: str,
+    csv_path: str | None = None,
+    output_path: str | None = None,
+    target_date: str | None = None,
+    quiet: bool = False,
+) -> dict:
+    """
+    Wrapper để gọi pipeline cắt lát từ code khác (run_all.py).
+
+    Parameters
+    ----------
+    seed_raw : str
+        Seed thô (chuỗi, có thể là hex hoặc số nguyên).
+    csv_path : str | None
+        Đường dẫn tới dataset CSV. Mặc định: data/dataset.csv.
+    output_path : str | None
+        Đường dẫn ghi file JSON ra. Mặc định: data/instance_slice.json.
+    target_date : str | None
+        Ngày muốn cắt lát. Mặc định: tự chọn ngày cao điểm.
+    quiet : bool
+        Không in log nếu True.
+
+    Returns
+    -------
+    dict — instance đã build (cũng được lưu ra output_path).
+    """
+    script_dir = Path(__file__).resolve().parent
+    repo_root = script_dir.parent
+    data_dir = repo_root / "data"
+
+    csv_path = csv_path or str(data_dir / "dataset.csv")
+    output_path = output_path or str(data_dir / "instance_slice.json")
+
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Không tìm thấy dataset: {csv_path}")
+
+    seed_raw_str, seed_int = normalize_seed(seed_raw)
+    rows = load_dataset(csv_path)
+    date = target_date if target_date else find_peak_date(rows)
+    instance = build_instance(rows, date, seed_int)
+    instance["meta"]["seed_raw"] = seed_raw_str
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(instance, f, ensure_ascii=False, indent=2)
+
+    if not quiet:
+        print(f"[slice_builder] Instance saved -> {output_path}")
+        print(f"[slice_builder]   date={date}  invigs={instance['meta']['num_invigilators']}"
+              f"  shifts={instance['meta']['num_shifts']}"
+              f"  assignments={instance['meta']['num_assignments']}")
+
+    return instance
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=str, default=None,
