@@ -32,8 +32,8 @@ Tu 20/09/2026 moi thanh vien dung `MSSV Ho Ten <MSSV@hcmut.edu.vn>`.
 
 | Member | Contribution % | Signature |
 |---|---|---|
-| 2551905 Tran Anh Khoi | (dien) | |
-| 2551907 Tran Tuan Kiet | (dien) | |
-| 2551909 Tran Bui Bao Long | (dien) | |
-| 2551918 Nguyen Phong Phu | (dien) | |
-| 2551920 Nguyen Quang Phuc | (dien) | |
+| 2551905 Tran Anh Khoi | 100% |Khoi|
+| 2551907 Tran Tuan Kiet | 100% | Kiet |
+| 2551909 Tran Bui Bao Long | 100% | Long  |
+| 2551918 Nguyen Phong Phu | 100% | Phu |
+| 2551920 Nguyen Quang Phuc | 100% | Phuc |
