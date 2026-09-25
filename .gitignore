@@ -1,1 +1,7 @@
 __pycache__/ 
+
+data/processed/
+
+test_instance.json
+
+data/processed_test*/

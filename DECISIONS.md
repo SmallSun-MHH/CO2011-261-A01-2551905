@@ -38,3 +38,13 @@ Du kien: `solver.get_core()` tra ve MOT tap con bat kha thoa, khong bao dam
 toi thieu. `unsat_core.py` co lai bang deletion-based MUS va chung minh:
 bo bat ky menh de nao trong loi thi bai toan tro lai kha thoa.
 Ly do (tu viet): [GT-7]
+
+### D8 — Ai sinh location preference: M1 hay M2
+Du kien: m1_logic/slice_builder.py ban dau tu sinh field 'prefer' bang seed,
+trung voi task 'sinh preference vi tri 3 loai' duoc giao rieng cho M2
+(m2_ilp/preprocess.py). Neu ca 2 cung sinh doc lap, se ra 2 gia tri Prefer(i,c)
+khac nhau cho cung 1 nguoi giua M1 va M2 du dung chung seed_int (khac thu tu
+rut so ngau nhien).
+Quyet dinh: M2 (m2_ilp/preprocess.py) la CHU SO HUU DUY NHAT cua buoc sinh
+Prefer(i,c). Da xoa doan sinh 'prefer' khoi m1_logic/slice_builder.py.
+Ly do (tu viet): [GT-8]
