@@ -67,8 +67,38 @@ def main():
         assert lp_result == {"CB1": 0, "CB2": 1}, "LP khong khop SAT!"
         print("[m1_lp] OK - LP khop SAT (a1=0, a2=1)\n")
 
+    # ══════════════════════════════════════════════════════════════════════
+    #  Module 2 — Linear & Integer Programming
+    # ══════════════════════════════════════════════════════════════════════
     if a.stage in ("all", "m2"):
-        pass  # TODO: m2_ilp    -> build & solve the seeded ILP, report fairness vs baseline
+        print(f"\n{'='*60}")
+        print(f"  MODULE 2 -- LP / ILP  (seed={a.seed})")
+        print(f"{'='*60}")
+
+        # --- Bước 2.1 + 2.6: tiền xử lý, trích I/J/capacity/busy/campus,
+        #     sinh preference vị trí 3 loại (chủ sở hữu duy nhất — D8) ---
+        # Chạy `--stage m2` một mình thì bước m1 chưa chạy, nên `instance`
+        # chưa tồn tại: nạp lại từ file mà slice_builder đã sinh. Còn khi
+        # chạy `--stage all` thì dùng lại đúng bản instance vừa kiểm chứng
+        # SAT ở trên, không đọc đĩa lần hai.
+        if "instance" not in locals():
+            import json
+            slice_path = repo_root / "data" / "instance_slice.json"
+            if not slice_path.exists():
+                sys.exit("[run_all] LOI: chua co data/instance_slice.json — "
+                         "chay `python run_all.py --seed <seed> --stage m1` truoc.")
+            instance = json.loads(slice_path.read_text(encoding="utf-8-sig"))
+
+        from m2_ilp.preprocess import run as run_m2_preprocess
+        m2_data = run_m2_preprocess(instance, seed_int=a.seed,
+                                    out_dir=str(repo_root / "data" / "processed"))
+        assert len(m2_data["preferences"]) == len(m2_data["I"]), \
+            "moi giam thi phai co dung 1 preference vi tri"
+        print(f"[m2_preprocess] OK - {len(m2_data['I'])} giam thi, "
+              f"{len(m2_data['J'])} ca, {len(m2_data['capacity'])} rang buoc suc chua\n")
+
+        # TODO (task 7, 9, 11): dung m2_data de dung & giai ILP co seed,
+        # doi chieu cong bang voi lich goc.
     if a.stage in ("all", "m3"):
         pass  # TODO: m3_automata-> load DFAs, product/minimization, regular->ILP, pumping
     if a.stage in ("all", "m4"):

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
 slice_builder.py  —  Cắt lát (slice) dataset thật thành instance nhỏ cho SAT/CNF.
+
+Module này KHÔNG mô phỏng bất cứ dữ liệu nào: mọi trường trong instance đều
+trích trực tiếp từ data/dataset.csv. Phần duy nhất được phép mô phỏng theo đề
+(preference vị trí 3 loại) do m2_ilp/preprocess.py sinh — xem DECISIONS.md D8.
+Vì vậy `--seed` ở đây chỉ được ghi vào meta để truy vết, không dùng để rút số.
 """
 
 import argparse
@@ -9,7 +14,6 @@ import hashlib
 import json
 import math
 import os
-import random
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -54,7 +58,10 @@ def find_peak_date(rows: list[dict]) -> str:
 
 
 def normalize_seed(raw: str) -> tuple[str, int]:
-    """Đổi seed thô trong data/seed.txt thành số nguyên cho random.Random().
+    """Đổi seed thô trong data/seed.txt thành số nguyên tái lập được.
+
+    Số này được ghi vào instance["meta"]["seed"] và truyền tiếp cho
+    m2_ilp/preprocess.py — module này không tự rút số ngẫu nhiên (D8).
 
     Đề bài nói seed là "a 3-line BLAKE2 hash", nên nó có thể là hex chứ không
     phải số nguyên thập phân. int() thẳng sẽ ném ValueError và làm hỏng điều
@@ -159,11 +166,10 @@ def build_instance(rows: list[dict], target_date: str, seed: int) -> dict:
         for shift in J:
             eligible.append([inv, shift])
 
-    rng = random.Random(seed)
-    prefer: dict[str, str | None] = {}
-    for inv in I:
-        choice = rng.choice(campuses + [None])
-        prefer[inv] = choice
+    # KHONG sinh 'prefer' o day. Theo quyet dinh D8 (DECISIONS.md), chu so huu
+    # DUY NHAT cua buoc sinh Prefer(i,c) la m2_ilp/preprocess.py. Neu M1 cung
+    # sinh, hai module se ra hai gia tri khac nhau cho cung mot nguoi du dung
+    # chung seed_int, vi thu tu rut so tu random.Random khac nhau.
 
     avg_load = len(J) / max(len(I), 1)
     max_load_val = math.ceil(avg_load) + 1
@@ -194,7 +200,6 @@ def build_instance(rows: list[dict], target_date: str, seed: int) -> dict:
         "overlap": overlaps,
         "busy": busy,
         "eligible": eligible,
-        "prefer": prefer,
         "max_load": max_load,
         "baseline": baseline,
     }
