@@ -49,8 +49,9 @@ def chay(cmd: list[str], cwd: Path, timeout: int = 600) -> tuple[int, str]:
 # ---------------------------------------------------------------------------
 # 1. File bắt buộc của M2
 # ---------------------------------------------------------------------------
-FILE_M2 = ["m2_ilp/preprocess.py", "run_all.py", "data/instance_slice.json",
-           "data/seed.txt", "DECISIONS.md", "CONTRIBUTIONS.md"]
+FILE_M2 = ["m2_ilp/preprocess.py", "m2_ilp/model.py", "m2_ilp/soft.py",
+           "run_all.py", "data/instance_slice.json", "data/seed.txt",
+           "DECISIONS.md", "CONTRIBUTIONS.md"]
 
 
 def kiem_file(repo: Path) -> None:
@@ -119,14 +120,16 @@ def kiem_run_all_noi_m2(repo: Path) -> None:
         bao(HONG, "run_all.py", "không tìm thấy nhánh stage m2")
         return
     than = m.group(1)
-    if "preprocess" not in than:
+    thieu = [ten for ten, pat in (("preprocess", "preprocess"), ("model", "solve_week"))
+             if pat not in than]
+    if thieu:
         bao(HONG, "run_all.py",
-            "nhánh m2 chưa gọi m2_ilp/preprocess.py — người chấm chạy "
-            "`python run_all.py` sẽ không đi qua M2")
+            f"nhánh m2 chưa gọi: {', '.join(thieu)} — người chấm chạy "
+            "`python run_all.py` sẽ không đi qua phần đó")
     elif re.search(r"^\s*pass\s*(#|$)", than, re.M):
         bao(CANH, "run_all.py", "nhánh m2 vẫn còn `pass`")
     else:
-        bao(DAT, "run_all.py", "nhánh m2 gọi thật m2_ilp/preprocess.py")
+        bao(DAT, "run_all.py", "nhánh m2 gọi thật preprocess + solve_week")
 
 
 # ---------------------------------------------------------------------------
@@ -247,6 +250,169 @@ def kiem_tai_lap(repo: Path, truoc: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 5b. Trọng số mềm phải TRÙNG tools/make_seed.py từng số (yêu cầu 2.5)
+# ---------------------------------------------------------------------------
+def kiem_trong_so(repo: Path) -> None:
+    ma = (
+        "import sys, subprocess, json, re\n"
+        "sys.path.insert(0, %r)\n"
+        "from m2_ilp.model import soft_weights_from_seed\n"
+        "seed = int(open(%r, encoding='utf-8-sig').read().strip())\n"
+        "ra = subprocess.run([sys.executable, %r, 'CO2011-261-A01-2551905', '--weights'],"
+        " capture_output=True, text=True).stdout\n"
+        "ct = [float(v) for v in re.findall(r'[0-9]+\\.[0-9]+', ra.split('soft_weights')[1])]\n"
+        "print(json.dumps({'code': soft_weights_from_seed(seed), 'make_seed': ct}))\n"
+    ) % (str(repo), str(repo / "data" / "seed.txt"), str(repo / "tools" / "make_seed.py"))
+    rc, out = chay([sys.executable, "-c", ma], repo, timeout=120)
+    if rc != 0:
+        bao(HONG, "Trọng số mềm", f"không kiểm được (thoát {rc})\n" + out[-500:])
+        return
+    try:
+        d = json.loads(out.strip().splitlines()[-1])
+    except (json.JSONDecodeError, IndexError):
+        bao(HONG, "Trọng số mềm", "không đọc được kết quả so sánh")
+        return
+    if d["code"] != d["make_seed"]:
+        bao(HONG, "Trọng số mềm",
+            f"code dùng {d['code']} nhưng make_seed.py (= script chấm) cho "
+            f"{d['make_seed']} — mọi con số trong báo cáo sẽ lệch")
+    else:
+        bao(DAT, "Trọng số mềm", f"{d['code']} — trùng make_seed.py từng số")
+
+    # không file nào được tự rút trọng số mềm bằng rng riêng
+    xau = []
+    for f in sorted((repo / "m2_ilp").glob("*.py")):
+        src = f.read_text(encoding="utf-8")
+        try:
+            cay = ast.parse(src)
+        except SyntaxError:
+            continue
+        for n in ast.walk(cay):
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) \
+                    and n.func.attr == "uniform" and f.name != "model.py":
+                xau.append(f"{f.name}:{n.lineno}")
+    if xau:
+        bao(HONG, "Nguồn trọng số",
+            "rút trọng số bằng rng riêng tại " + ", ".join(xau) +
+            " — phải lấy qua model.soft_weights_from_seed")
+    else:
+        bao(DAT, "Nguồn trọng số", "một nguồn duy nhất: model.soft_weights_from_seed")
+
+
+# ---------------------------------------------------------------------------
+# 5c. Nghiệm M2: 5 ràng buộc cứng + tính tất định (yêu cầu 2.2-2.4, 2.7)
+# ---------------------------------------------------------------------------
+def kiem_nghiem_m2(repo: Path) -> None:
+    f = repo / "m2_ilp" / "out" / "solution.json"
+    if not f.exists():
+        bao(HONG, "Nghiệm M2", "không có m2_ilp/out/solution.json sau khi chạy run_all.py")
+        return
+    sol = json.loads(f.read_text(encoding="utf-8"))
+
+    if not sol.get("feasible"):
+        bao(HONG, "Nghiệm M2", f"không khả thi: {sol.get('status')}")
+        return
+    kiem = sol.get("kiem_rang_buoc_cung", {})
+    xau = [k for k, v in kiem.items() if k != "tat_ca_dat" and not v]
+    if xau:
+        bao(HONG, "Ràng buộc cứng M2", "nghiệm vi phạm: " + ", ".join(xau))
+    else:
+        fa = sol.get("fairness", {})
+        bao(DAT, "Ràng buộc cứng M2",
+            f"5/5 ĐẠT trên nghiệm · {len(sol['assignment'])} lượt gán · "
+            f"t*={sol.get('t_star')} · tải {fa.get('tai_nho_nhat')}-{fa.get('tai_lon_nhat')} · "
+            f"lệch L1={fa.get('lech_L1_quanh_q')}")
+
+    # sĩ số phải khớp tổng capacity
+    inst = json.loads((repo / "data" / "instance_slice.json").read_text(encoding="utf-8-sig"))
+    tong = sum(int(v) for v in inst["capacity"].values())
+    if len(sol["assignment"]) != tong:
+        bao(HONG, "Sĩ số M2",
+            f"{len(sol['assignment'])} lượt gán nhưng tổng capacity = {tong}")
+    else:
+        bao(DAT, "Sĩ số M2", f"{tong} lượt gán = đúng tổng capacity")
+
+    # tính tất định: giải lại 2 lần, bảng phân công phải y hệt
+    hashes = []
+    for k in (1, 2):
+        rc, _ = chay([sys.executable, "m2_ilp/model.py", "--time-limit", "30",
+                      "--out", f"m2_ilp/out/_tatdinh_{k}.json"], repo, timeout=300)
+        if rc != 0:
+            bao(CANH, "Tất định M2", "không chạy lại được để so sánh")
+            return
+        d = json.loads((repo / "m2_ilp" / "out" / f"_tatdinh_{k}.json")
+                       .read_text(encoding="utf-8"))
+        hashes.append(json.dumps([d["assignment"], d["objective"]], sort_keys=True))
+        (repo / "m2_ilp" / "out" / f"_tatdinh_{k}.json").unlink(missing_ok=True)
+    if hashes[0] != hashes[1]:
+        bao(HONG, "Tất định M2",
+            "hai lần giải ra bảng phân công khác nhau — đặt workers=1 trong solve_week")
+    else:
+        bao(DAT, "Tất định M2", "hai lần giải ra nghiệm y hệt")
+
+
+# ---------------------------------------------------------------------------
+# 5d. requirements.txt phải CÀI ĐƯỢC THẬT (DoD: clone sạch là chạy được)
+# ---------------------------------------------------------------------------
+PY_TAGS = ("cp311", "cp312")   # phiên bản Python mà bộ ghim này nhắm tới
+
+
+def kiem_requirements(repo: Path) -> None:
+    """Hỏi thẳng PyPI xem từng phiên bản đã ghim có TỒN TẠI và có wheel cho
+    Python mục tiêu hay không. Không chạy `pip install --dry-run`: bộ giải phụ
+    thuộc của pip mất nhiều phút cho bộ này, quá chậm để làm cổng tự kiểm."""
+    import urllib.error
+    import urllib.request
+
+    f = repo / "requirements.txt"
+    if not f.exists():
+        bao(HONG, "requirements.txt", "không có file")
+        return
+    ghim = [l.strip() for l in f.read_text(encoding="utf-8").splitlines()
+            if l.strip() and not l.strip().startswith("#")]
+    chua_ghim = [l for l in ghim if "==" not in l]
+    if chua_ghim:
+        bao(HONG, "requirements.txt", "chưa ghim phiên bản: " + ", ".join(chua_ghim))
+        return
+
+    khong_ton_tai, khong_wheel, khong_kiem_duoc = [], [], []
+    for dong in ghim:
+        goi, ver = dong.split("==", 1)
+        try:
+            with urllib.request.urlopen(
+                    f"https://pypi.org/pypi/{goi}/json", timeout=30) as r:
+                d = json.load(r)
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+            khong_kiem_duoc.append(goi)
+            continue
+        rel = d.get("releases", {})
+        if ver not in rel:
+            gan = sorted(v for v in rel if v.startswith(ver.rsplit(".", 1)[0]))[-3:]
+            khong_ton_tai.append(f"{dong} (gần nhất có thật: {', '.join(gan) or '—'})")
+            continue
+        tep = [x["filename"] for x in rel[ver] if x["packagetype"] == "bdist_wheel"]
+        thuan_py = any("-py3-" in t or "-py2.py3-" in t for t in tep)
+        if not thuan_py and not any(tag in t for t in tep for tag in PY_TAGS):
+            khong_wheel.append(dong)
+
+    if khong_ton_tai:
+        bao(HONG, "requirements.txt",
+            "phiên bản KHÔNG tồn tại trên PyPI → `pip install -r` thất bại trên "
+            "máy sạch: " + " · ".join(khong_ton_tai))
+    elif khong_wheel:
+        bao(HONG, "requirements.txt",
+            f"không có wheel cho {'/'.join(PY_TAGS)}: " + ", ".join(khong_wheel))
+    elif khong_kiem_duoc:
+        bao(CANH, "requirements.txt",
+            f"{len(ghim)} gói đều ghim ==; không hỏi được PyPI về: "
+            + ", ".join(khong_kiem_duoc))
+    else:
+        bao(DAT, "requirements.txt",
+            f"{len(ghim)} gói · đều ghim == · đều tồn tại và có wheel cho "
+            f"{'/'.join(PY_TAGS)}")
+
+
+# ---------------------------------------------------------------------------
 # 6. Ô khuyết trong tài liệu (chỉ người thật điền được)
 # ---------------------------------------------------------------------------
 O_KHUYET = [("DECISIONS.md", r"\[GT-\d\]"),
@@ -330,6 +496,9 @@ def main() -> int:
     truoc = kiem_chay_va_schema(repo)
     if truoc:
         kiem_tai_lap(repo, truoc)
+    kiem_trong_so(repo)
+    kiem_nghiem_m2(repo)
+    kiem_requirements(repo)
     kiem_o_khuyet(repo)
     kiem_tien_trinh(repo)
 

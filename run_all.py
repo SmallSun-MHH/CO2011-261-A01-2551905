@@ -13,7 +13,17 @@ import sys
 from pathlib import Path
 
 
+def _canh_bao_python() -> None:
+    """requirements.txt ghim bo thu vien chi co wheel cho cp311/cp312. Neu chay
+    tren Python moi hon thi bao ngay, thay vi de nguoi cham gap ImportError kho hieu."""
+    if sys.version_info >= (3, 13):
+        print(f"[run_all] CANH BAO: dang chay Python {sys.version_info.major}."
+              f"{sys.version_info.minor}. requirements.txt ghim ortools/pandas/numpy "
+              f"chi co wheel cho 3.11-3.12; neu import loi thi dung venv 3.12.\n")
+
+
 def main():
+    _canh_bao_python()
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, required=True, help="from data/seed.txt")
     ap.add_argument("--stage", default="all",
@@ -97,8 +107,27 @@ def main():
         print(f"[m2_preprocess] OK - {len(m2_data['I'])} giam thi, "
               f"{len(m2_data['J'])} ca, {len(m2_data['capacity'])} rang buoc suc chua\n")
 
-        # TODO (task 7, 9, 11): dung m2_data de dung & giai ILP co seed,
-        # doi chieu cong bang voi lich goc.
+        # --- Buoc 2.2-2.4 + 2.7: mo hinh CP-SAT loi, muc tieu tu dien ---
+        from m2_ilp.model import build_params, solve_week
+        params = build_params(instance, m2_data)
+        m2_sol = solve_week(params, lambdas=None, seed_int=a.seed, time_limit_s=60.0)
+
+        if not m2_sol.get("feasible"):
+            sys.exit(f"[run_all] LOI: M2 khong kha thi ({m2_sol['status']}). "
+                     f"{m2_sol.get('message', '')}")
+        kiem = m2_sol["kiem_rang_buoc_cung"]
+        if not kiem["tat_ca_dat"]:
+            xau = [k for k, v in kiem.items() if k != "tat_ca_dat" and not v]
+            sys.exit(f"[run_all] LOI: nghiem M2 vi pham rang buoc cung: {xau}")
+
+        import json as _json
+        _out = repo_root / "m2_ilp" / "out" / "solution.json"
+        _out.parent.mkdir(parents=True, exist_ok=True)
+        _out.write_text(_json.dumps(m2_sol, ensure_ascii=False, indent=2,
+                                    sort_keys=True), encoding="utf-8")
+        print(f"[m2_model] Da ghi {_out.relative_to(repo_root)}\n")
+
+        # TODO (task 9, 10): baseline + chi so cong bang + doi chung PuLP + phan vi du.
     if a.stage in ("all", "m3"):
         pass  # TODO: m3_automata-> load DFAs, product/minimization, regular->ILP, pumping
     if a.stage in ("all", "m4"):

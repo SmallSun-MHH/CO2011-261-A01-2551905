@@ -1,10 +1,19 @@
-# CO2011 SEM261 IAP — pin exact versions before you submit (example baseline)
+# CO2011 SEM261 IAP — phien ban da ghim.
+#
+# PYTHON: bo ghim nay nham Python 3.11 hoac 3.12.
+#   ortools==9.10.4067, pandas==2.2.2 va numpy==2.0.0 CHI co wheel cho cp311/cp312.
+#   Tren Python 3.13+ pip se co build tu source va that bai. Dung venv 3.12:
+#       python3.12 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+#
+# Da sua 03/10/2026: python-sat==1.8.dev13 KHONG TON TAI tren PyPI (co dev12 va
+#   dev14, khong co dev13) nen `pip install -r requirements.txt` that bai tren may
+#   sach. Doi sang 1.8.dev14 — ban gan nhat co that, va co ca wheel cp313.
 pulp==2.8.0
 ortools==9.10.4067
 numpy==2.0.0
 pandas==2.2.2
 matplotlib==3.9.0
 streamlit==1.36.0
-python-sat==1.8.dev13
+python-sat==1.8.dev14
 z3-solver==4.13.0.0
 networkx==3.3
