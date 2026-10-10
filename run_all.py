@@ -10,6 +10,10 @@ This skeleton ships in the course template repository ("Use this template", not 
 """
 import argparse
 import sys
+
+for _s in (sys.stdout, sys.stderr):  # console Windows mac dinh cp1252 -> loi khi in tieng Viet
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 from pathlib import Path
 
 
@@ -52,8 +56,10 @@ def main():
         # --- Bước 1.3: Logic → LP bridge (worked example) ---
         # --- Bước 1.2b: Lõi bất khả thỏa TỐI THIỂU (deletion-based MUS) ---
         import subprocess
+        import os
         rc = subprocess.run([sys.executable, "m1_logic/unsat_core.py",
-                             "data/instance_slice.json"], cwd=repo_root).returncode
+                             "data/instance_slice.json"], cwd=repo_root,
+                            env={**os.environ, "PYTHONUTF8": "1"}).returncode
         if rc != 0:
             sys.exit("[run_all] LOI: m1_logic/unsat_core.py that bai")
 

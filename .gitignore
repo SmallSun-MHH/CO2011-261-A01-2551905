@@ -8,3 +8,6 @@ data/processed_test*/
 
 # dau ra tai sinh duoc bang `python run_all.py --seed $(cat data/seed.txt)`
 m2_ilp/out/
+
+# moi truong ao Python 3.12 cuc bo
+.venv/

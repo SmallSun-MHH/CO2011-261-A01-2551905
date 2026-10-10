@@ -1,4 +1,4 @@
-# CO2011 SEM261 — Invigilator Assignment Problem (team repository)
+﻿# CO2011 SEM261 — Invigilator Assignment Problem (team repository)
 
 Created from the course template with **"Use this template"** (not a fork). Keep this repo **private**
 and add your class's instructor as a collaborator.
@@ -32,7 +32,9 @@ Declare any AI-tool use in this README. Full rules, rubric (Appendix B), and the
 > Theo §4 của đề: *"declare any AI-tool use in README.md"*. Đề cho phép dùng AI như công cụ;
 > điều bị phạt là không khai báo. Mỗi thành viên tự điền và tự chịu trách nhiệm dòng của mình.
 
-**Công cụ:** Claude (Anthropic), qua giao diện Cowork.
+**Công cụ:** Claude (Anthropic), qua giao diện Cowork; Gemini/Antigravity trong giai đoạn rà soát cuối M2.
+
+**Cách nhóm dùng AI ở giai đoạn rà soát M2:** AI được dùng để phân tích phần dự án do các thành viên trước đó làm, đánh giá tiến độ và độ tối ưu của code, lập kế hoạch hoàn thiện, soạn nháp phần lý do trong `DECISIONS.md` và điền các ô khai báo còn thiếu. Nhóm đọc lại, chạy lại `python tools/check_m2.py` và chịu trách nhiệm về nội dung.
 
 **Thang mức độ:** 0 không dùng · 1 hỏi khái niệm, không lấy code · 2 người viết, AI rà soát ·
 3 AI sinh nháp, người viết lại và kiểm chứng · 4 AI sinh phần lớn, người đọc hiểu, sửa và kiểm chứng bằng phép kiểm chạy được.
@@ -44,22 +46,22 @@ Declare any AI-tool use in this README. Full rules, rubric (Appendix B), and the
 | `m1_logic/slice_builder.py` — suy `busy` từ lịch gốc | 2551905 Trần Anh Khôi | 3 | Phát hiện `busy` để rỗng làm mất ràng buộc H2, đề xuất suy từ lịch gốc qua quan hệ chồng giờ | `busy` từ 0 lên 15 cặp trên dữ liệu thật |
 | `m1_logic/slice_builder.py` — đơn vị ca `(MS Ca thi, Cơ sở)`, đọc seed | 2551918 Nguyễn Phong Phú | 4 | Phát hiện một MS Ca thi mở đồng thời ở hai cơ sở nên `overlap` luôn rỗng; phát hiện `data/seed.txt` bị ghi UTF-16 | `overlap` từ 0 lên 1 cặp; seed đọc đúng 43003334 |
 | `m1_logic/cnf_encoder.py` — sửa đường dẫn instance, chặn cấm-toàn-bộ khi thiếu `eligible` | 2551918 Nguyễn Phong Phú | 3 | Phát hiện script tìm `instance_slice.json` sai thư mục nên nhánh lát dữ liệu chưa từng chạy | Nhánh lát dữ liệu chạy ra SAT, 21 lượt gán |
-| `m2_ilp/preprocess.py` (2.1, 2.6) | 2551909 Trần Bùi Bảo Long | (điền) | (điền) | (điền) |
+| `m2_ilp/preprocess.py` (2.1, 2.6) | 2551909 Trần Bùi Bảo Long | 3 | AI sinh nháp phần trích I/J/capacity/busy/campus và sinh preference vị trí từ seed; người viết lại, chốt D8 (preprocess là chủ sở hữu duy nhất của Prefer(i,c)) | `python tools/check_m2.py`: schema 5 file JSON đạt, tái lập cùng seed giống hệt, đổi seed thì khác |
 | Áp quyết định D8: bỏ sinh `prefer` khỏi `m1_logic/slice_builder.py` | 2551918 Nguyễn Phong Phú | 4 | Đối chiếu D8 với code và phát hiện văn bản D8 khai đã xoá nhưng code vẫn sinh; sinh đoạn vá và chú thích lý do | `python tools/check_m2.py` đọc `slice_builder.py` bằng AST, xác nhận không còn định danh `prefer` trong code; `data/instance_slice.json` sinh lại không còn field đó |
-| `run_all.py` — nối nhánh `stage m2` vào `m2_ilp/preprocess.py` | 2551918 Nguyễn Phong Phú | 4 | Phát hiện nhánh m2 còn là `pass  # TODO` nên `preprocess.py` không ai gọi; sinh lời gọi, thêm nhánh nạp lại instance khi chạy `--stage m2` một mình | `python run_all.py --seed 43003334` thoát 0 và đi qua M2; `--stage m2` khi thiếu `instance_slice.json` báo lỗi và thoát 1 |
+| `run_all.py` — nối nhánh `stage m2` vào `m2_ilp/preprocess.py` | 2551918 Nguyễn Phong Phú | 4 | Phát hiện nhánh m2 còn là đoạn giữ chỗ chưa cài (`pass`) nên `preprocess.py` không ai gọi; sinh lời gọi, thêm nhánh nạp lại instance khi chạy `--stage m2` một mình | `python run_all.py --seed 43003334` thoát 0 và đi qua M2; `--stage m2` khi thiếu `instance_slice.json` báo lỗi và thoát 1 |
 | `tools/check_m2.py` — cổng tự kiểm M2 | 2551918 Nguyễn Phong Phú | 4 | Sinh toàn bộ script kiểm: schema 5 file JSON đầu ra, D8 một chủ sở hữu, phép thử tái lập (cùng seed giống hệt, đổi seed phải khác), tổng cột % trong ledger | Tự chạy trên repo: 7 mục ĐẠT; cố tình đổi seed để xác nhận phép thử tái lập thật sự bắt được lỗi |
-| `m2_ilp/soft.py` (2.5, bản gốc) | 2551907 Trần Tuấn Kiệt | (điền) | (điền) | (điền) |
+| `m2_ilp/soft.py` (2.5, bản gốc) | 2551907 Trần Tuấn Kiệt | 3 | AI sinh nháp hàm phạt S1 (ưu tiên cơ sở) và S2 (giới hạn tải) theo `spec.md`; người viết lại và đối chiếu đặc tả | `python m2_ilp/soft.py` so trọng số với `make_seed.py`; `check_m2.py` kiểm S1, S2 trên nghiệm (0 vi phạm) |
 | `m2_ilp/model.py` (2.2–2.4 + 2.7) — mô hình CP-SAT lõi | 2551918 Nguyễn Phong Phú | 4 | Sinh toàn bộ khung: 108 biến nhị phân, 5 ràng buộc cứng dịch 1-1 từ `spec.md`, mục tiêu từ điển hai pha (min-max rồi L1 + phạt mềm), hàm `solve_week(params, lambdas)` để M4 tái dùng, và phần tự kiểm lại 5 ràng buộc cứng trên nghiệm | `python m2_ilp/model.py` → t\*=2, 21 lượt gán đúng tổng capacity, lệch L1=3, 5/5 ràng buộc cứng kiểm lại ĐẠT; chạy 3 lần ra nghiệm y hệt |
 | `m2_ilp/soft.py` — vá trọng số, MaxLoad, thang nhân | 2551918 Nguyễn Phong Phú | 4 | Phát hiện bản gốc tự rút `rng.uniform` và **không làm tròn** nên dùng 0.7054693790735072 thay vì 0.71 của `make_seed.py`; phát hiện bỏ sót trọng số thứ ba và cứng `MaxLoad=3` trong khi dữ liệu có `max_load` theo từng người | `python m2_ilp/soft.py` so trực tiếp với đầu ra `tools/make_seed.py --weights`: [0.71, 1.62, 1.33] trùng từng số |
 | `requirements.txt` — sửa ghim python-sat | 2551918 Nguyễn Phong Phú | 3 | Phát hiện `python-sat==1.8.dev13` không tồn tại trên PyPI nên `pip install -r requirements.txt` thất bại trên máy sạch; đề xuất 1.8.dev14 và ghi rõ bộ ghim nhắm Python 3.11–3.12 | `tools/check_m2.py` hỏi PyPI từng phiên bản: 9/9 gói tồn tại và có wheel cho cp311/cp312 |
 | `tools/check_m2.py` — thêm 4 phép kiểm M2 | 2551918 Nguyễn Phong Phú | 4 | Sinh phép kiểm: trọng số phải trùng `make_seed.py`; không file nào trong `m2_ilp/` được tự rút `rng.uniform`; 5 ràng buộc cứng trên nghiệm; tính tất định qua hai lần giải; `requirements.txt` tồn tại thật trên PyPI | Tự chạy: 15 ĐẠT. Cố tình bỏ `round()` khỏi trọng số để xác nhận phép kiểm bắt được lỗi |
-| `m1_logic/cnf_encoder.py` (bản gốc) | 2551907 Trần Tuấn Kiệt | (điền) | (điền) | (điền) |
-| `m1_logic/spec.md` (1.1) | 2551909 Trần Bùi Bảo Long | (điền) | (điền) | (điền) |
-| `m1_logic/bang_logic_to_lp.py` (1.3) | 2551920 Nguyễn Quang Phúc | (điền) | (điền) | (điền) |
-| `m1_logic/slice_builder.py` (bản gốc) | 2551905 Trần Anh Khôi | (điền) | (điền) | (điền) |
+| `m1_logic/cnf_encoder.py` (bản gốc) | 2551907 Trần Tuấn Kiệt | 3 | AI sinh nháp bộ mã hóa CNF (H1, H2, H5 bằng seqcounter); người viết lại, sau đó Khôi viết lại phần lớn ở commit 7c3d296 | Chạy `run_all.py`: lát dữ liệu ra SAT, 21 lượt gán; phép kiểm tối thiểu của `unsat_core.py` đạt |
+| `m1_logic/spec.md` (1.1) | 2551909 Trần Bùi Bảo Long | 3 | AI sinh nháp chữ ký vị từ và 5 ràng buộc cứng + 2 mềm; người viết lại và chốt | Mỗi ràng buộc trong `spec.md` có một phép kiểm tương ứng ở `model.py` (5/5 ràng buộc cứng tự kiểm trên nghiệm đạt) |
+| `m1_logic/bang_logic_to_lp.py` (1.3) | 2551920 Nguyễn Quang Phúc | 3 | AI sinh nháp ánh xạ 6 dạng mệnh đề sang ràng buộc tuyến tính; người viết lại và đối chiếu | `run_all.py` in `[m1_lp] OK - LP khớp SAT` trên ví dụ mẫu |
+| `m1_logic/slice_builder.py` (bản gốc) | 2551905 Trần Anh Khôi | 3 | AI sinh nháp phần cắt lát ngày cao điểm 28/05/2026 từ dataset; người viết lại | `run_all.py` sinh `data/instance_slice.json`: 18 giám thị, 6 ca, 21 lượt gán khớp lịch gốc |
 
-**Không do AI tạo ra:** `DECISIONS.md`; việc chọn lát dữ liệu và phép siết ở 1.2 cùng lập luận vận hành đứng sau;
-`MEETINGS.md`, `CHECKPOINTS.md`. Mọi con số trong báo cáo tái tạo từ `python run_all.py --seed $(cat data/seed.txt)` trên dữ liệu thật.
+**Không do AI tạo ra:** việc chọn lát dữ liệu và phép siết ở 1.2 cùng lập luận vận hành đứng sau;
+`MEETINGS.md`, `CHECKPOINTS.md`. **Có AI hỗ trợ:** phần lý do `[GT-1]`–`[GT-8]` trong `DECISIONS.md` do AI soạn nháp từ số liệu có trong repo (mức 3), cả nhóm đọc lại và chịu trách nhiệm. Mọi con số trong báo cáo tái tạo từ `python run_all.py --seed $(cat data/seed.txt)` trên dữ liệu thật.
 
 **Kiểm soát đầu ra AI:**
 1. Mỗi file do AI sinh đi kèm phép kiểm chạy được (ví dụ `unsat_core.py` tự chứng minh tính tối thiểu của lõi).

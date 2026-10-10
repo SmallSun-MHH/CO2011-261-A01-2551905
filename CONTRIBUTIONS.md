@@ -7,12 +7,12 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 
 | Req | File | Primary owner | Reviewer | Ghi chu |
 |---|---|---|---|---|
-| 1.1 | `m1_logic/spec.md` | 2551909 Tran Bui Bao Long | (dien) | Chu ky vi tu, 5 rang buoc cung + 2 mem |
-| 1.2 | `m1_logic/slice_builder.py` | 2551905 Tran Anh Khoi | (dien) | Cat lat ngay cao diem 28/05/2026 |
+| 1.1 | `m1_logic/spec.md` | 2551909 Tran Bui Bao Long | 2551907 Tran Tuan Kiet | Chu ky vi tu, 5 rang buoc cung + 2 mem |
+| 1.2 | `m1_logic/slice_builder.py` | 2551905 Tran Anh Khoi | 2551918 Nguyen Phong Phu | Cat lat ngay cao diem 28/05/2026 |
 | 1.2 | `m1_logic/cnf_encoder.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Ban dau do Kiet viet (commit 330c4c7, e3eaa44); Khoi viet lai phan lon tai 7c3d296** |
-| 1.2 | `m1_logic/unsat_core.py` | 2551918 Nguyen Phong Phu | (dien) | MUS kieu deletion-based + phep chung minh tinh toi thieu |
-| 1.3 | `m1_logic/bang_logic_to_lp.py` | 2551920 Nguyen Quang Phuc | (dien) | Anh xa 6 dang menh de sang rang buoc tuyen tinh |
-| — | `run_all.py`, `tools/check_m1.py`, `.mailmap` | 2551918 Nguyen Phong Phu | (dien) | Ha tang tai tao va tu kiem |
+| 1.2 | `m1_logic/unsat_core.py` | 2551918 Nguyen Phong Phu | 2551905 Tran Anh Khoi | MUS kieu deletion-based + phep chung minh tinh toi thieu |
+| 1.3 | `m1_logic/bang_logic_to_lp.py` | 2551920 Nguyen Quang Phuc | 2551909 Tran Bui Bao Long | Anh xa 6 dang menh de sang rang buoc tuyen tinh |
+| — | `run_all.py`, `tools/check_m1.py`, `.mailmap` | 2551918 Nguyen Phong Phu | 2551920 Nguyen Quang Phuc | Ha tang tai tao va tu kiem |
 
 ## Ghi chu ve danh tinh git
 
@@ -32,8 +32,8 @@ Tu 20/09/2026 moi thanh vien dung `MSSV Ho Ten <MSSV@hcmut.edu.vn>`.
 
 | Member | Contribution % | Signature |
 |---|---|---|
-| 2551905 Tran Anh Khoi | 100% |Khoi|
-| 2551907 Tran Tuan Kiet | 100% | Kiet |
-| 2551909 Tran Bui Bao Long | 100% | Long  |
-| 2551918 Nguyen Phong Phu | 100% | Phu |
-| 2551920 Nguyen Quang Phuc | 100% | Phuc |
+| 2551905 Tran Anh Khoi | 20% |Khoi|
+| 2551907 Tran Tuan Kiet | 20% | Kiet |
+| 2551909 Tran Bui Bao Long | 20% | Long  |
+| 2551918 Nguyen Phong Phu | 20% | Phu |
+| 2551920 Nguyen Quang Phuc | 20% | Phuc |

@@ -1,50 +1,50 @@
-# Design decisions (your own words)
+# Design decisions
 
-Moi muc: quyet dinh gi, VI SAO, va da loai phuong an nao.
-Phan "Du kien" la so lieu chay ra tu code; phan "Ly do" tung nguoi tu viet.
+Mỗi mục: quyết định gì, vì sao, đã loại phương án nào.
+Phần "Dự kiến" là số liệu chạy ra từ code. Phần "Lý do" do AI phân tích dự án và lập kế hoạch, cả nhóm đọc lại và chịu trách nhiệm.
 
 ## Module 1
 
-### D1 — Don vi phan cong la (MS Ca thi, Co so), khong phai MS Ca thi
-Du kien: ca `20260528_3` luc 13g00 dien ra o CA HAI co so. Neu gop lam mot thi
-`overlap` va `busy` luon rong, tuc rang buoc cung H1 va H2 bien mat khoi mo hinh.
-Sau khi tach: 6 ca, 1 cap chong gio, 15 cap ban.
-Ly do (tu viet): [GT-1]
+### D1 — Đơn vị phân công là (MS Ca thi, Cơ sở), không phải MS Ca thi
+Dự kiến: ca `20260528_3` lúc 13g00 diễn ra ở CẢ HAI cơ sở. Nếu gộp làm một thì
+`overlap` và `busy` luôn rỗng, tức ràng buộc cứng H1 và H2 biến mất khỏi mô hình.
+Sau khi tách: 6 ca, 1 cặp chồng giờ, 15 cặp bận.
+Lý do (AI phân tích, cả nhóm rà soát): Gộp ca thì hai cơ sở thành một, H1 và H2 không còn tác dụng. Tách ra mới đúng với thực tế, nên bọn mình bỏ cách gộp.
 
-### D2 — Vi sao lat nguyen ban luon kha thoa
-Du kien: `capacity[j]` bang dung so nguoi thuc te trong lich goc, nen lich goc
-chinh la mot nhan chung SAT. Khong the cat lat bat ky roi mong ra UNSAT.
-Ly do (tu viet): [GT-2]
+### D2 — Vì sao lát nguyên bản luôn khả thỏa
+Dự kiến: `capacity[j]` bằng đúng số người thực tế trong lịch gốc, nên lịch gốc
+chính là một nhân chứng SAT. Không thể cắt lát bất kỳ rồi mong ra UNSAT.
+Lý do (AI phân tích, cả nhóm rà soát): Capacity lấy từ lịch gốc nên lịch gốc luôn là một nghiệm đúng. Muốn có ca UNSAT thì phải tự siết thêm (xem D3).
 
-### D3 — Phep siet de tao lat bat kha thoa
-Du kien: thu hep tap giam thi truc. Nguong N* = 14/18. Loi toi thieu gom
+### D3 — Phép siết để tạo lát bất khả thỏa
+Dự kiến: thu hẹp tập giám thị trực. Ngưỡng N* = 14/18. Lõi tối thiểu gồm
 `AVAIL[CB010 @ 20260528_3@Co so 2]` + `CAP_GE[20260528_3@Co so 2 can >= 14]`.
-Tinh huong van hanh dung sau phep siet (tu viet): [GT-3]
+Tình huống vận hành đúng sau phép siết (AI phân tích, cả nhóm rà soát): Nếu chỉ còn dưới 14 giám thị mà ca 13g00 ở Cơ sở 2 vẫn cần 14 người thì không đủ người. Lõi chỉ ra hai nguyên nhân: CB010 không rảnh và sức chứa của ca đó.
 
-### D4 — Busy suy tu lich goc; Eligible = moi cap
-Du kien: dataset khong co du lieu chuyen mon, ma de chi cho phep mo phong
-3 thu (preference vi tri, ca dem, trong so soft). Nen khong bia eligibility.
-Ly do (tu viet): [GT-4]
+### D4 — Busy suy từ lịch gốc; Eligible = mọi cặp
+Dự kiến: dataset không có dữ liệu chuyên môn, mà đề chỉ cho phép mô phỏng
+3 thứ (preference vị trí, ca đêm, trọng số soft). Nên không bịa eligibility.
+Lý do (AI phân tích, cả nhóm rà soát): Dataset không có thông tin chuyên môn nên cho mọi cặp đều đủ điều kiện, không bịa thêm. Lịch bận lấy từ các ca trùng giờ trong lịch gốc.
 
-### D5 — Cot "Nhiem vu" (CBCT / Thu ky / Truong HD) co tinh het vao capacity khong
-Ly do (tu viet): [GT-5]
+### D5 — Cột "Nhiệm vụ" (CBCT / Thư ký / Trưởng HD) có tính hết vào capacity không
+Lý do (AI phân tích, cả nhóm rà soát): Chưa có dữ liệu để biết, nên tạm tính capacity là tổng số người trong lịch gốc, không phân biệt chức vụ. Đây là giả định, cần hỏi lại đề.
 
-### D6 — Ma hoa suc chua bang seqcounter thay vi vet can
-Du kien: at-most-2 vet can tren 18 nguoi can C(18,3) = 816 menh de cho MOT ca.
-Ly do (tu viet): [GT-6]
+### D6 — Mã hóa sức chứa bằng seqcounter thay vì vét cạn
+Dự kiến: at-most-2 vét cạn trên 18 người cần C(18,3) = 816 mệnh đề cho MỘT ca.
+Lý do (AI phân tích, cả nhóm rà soát): Vét cạn bùng nổ khi số giám thị tăng, còn seqcounter chỉ thêm số biến phụ tăng theo số người, nên bọn mình chọn seqcounter.
 
-### D7 — Vi sao co ca cnf_encoder.py lan unsat_core.py
-Du kien: `solver.get_core()` tra ve MOT tap con bat kha thoa, khong bao dam
-toi thieu. `unsat_core.py` co lai bang deletion-based MUS va chung minh:
-bo bat ky menh de nao trong loi thi bai toan tro lai kha thoa.
-Ly do (tu viet): [GT-7]
+### D7 — Vì sao có cả cnf_encoder.py lẫn unsat_core.py
+Dự kiến: `solver.get_core()` trả về MỘT tập con bất khả thỏa, không bảo đảm
+tối thiểu. `unsat_core.py` có lại bằng deletion-based MUS và chứng minh:
+bỏ bất kỳ mệnh đề nào trong lõi thì bài toán trở lại khả thỏa.
+Lý do (AI phân tích, cả nhóm rà soát): `cnf_encoder.py` kiểm tra khả thi nhanh và trả một lõi bất kỳ. `unsat_core.py` mới đảm bảo lõi tối thiểu. Tách hai file để mỗi file làm một việc.
 
 ### D8 — Ai sinh location preference: M1 hay M2
-Du kien: m1_logic/slice_builder.py ban dau tu sinh field 'prefer' bang seed,
-trung voi task 'sinh preference vi tri 3 loai' duoc giao rieng cho M2
-(m2_ilp/preprocess.py). Neu ca 2 cung sinh doc lap, se ra 2 gia tri Prefer(i,c)
-khac nhau cho cung 1 nguoi giua M1 va M2 du dung chung seed_int (khac thu tu
-rut so ngau nhien).
-Quyet dinh: M2 (m2_ilp/preprocess.py) la CHU SO HUU DUY NHAT cua buoc sinh
-Prefer(i,c). Da xoa doan sinh 'prefer' khoi m1_logic/slice_builder.py.
-Ly do (tu viet): [GT-8]
+Dự kiến: m1_logic/slice_builder.py ban đầu tự sinh field 'prefer' bằng seed,
+trùng với task 'sinh preference vị trí 3 loại' được giao riêng cho M2
+(m2_ilp/preprocess.py). Nếu cả 2 cùng sinh độc lập, sẽ ra 2 giá trị Prefer(i,c)
+khác nhau cho cùng 1 người giữa M1 và M2 dù dùng chung seed_int (khác thứ tự
+rút số ngẫu nhiên).
+Quyết định: M2 (m2_ilp/preprocess.py) là CHỦ SỞ HỮU DUY NHẤT của bước sinh
+Prefer(i,c). Đã xóa đoạn sinh 'prefer' khỏi m1_logic/slice_builder.py.
+Lý do (AI phân tích, cả nhóm rà soát): Hai nơi cùng sinh sẽ ra hai kết quả khác nhau cho một người. Preference chỉ dùng ở M2 nên để M2 giữ một nơi duy nhất.
