@@ -116,7 +116,8 @@ def _tu_kiem() -> int:
     ra = subprocess.run([sys.executable, str(goc / "tools" / "make_seed.py"),
                          team_id, "--weights"],
                         capture_output=True, text=True, check=True).stdout
-    chinh_thuc = eval(ra.split("soft_weights =")[1].strip())  # noqa: S307 - đọc list số
+    import ast
+    chinh_thuc = ast.literal_eval(ra.split("soft_weights =")[1].strip())
 
     print(f"  make_seed.py  : {chinh_thuc}")
     print(f"  soft.py dùng  : {cua_toi}")
@@ -128,4 +129,7 @@ def _tu_kiem() -> int:
 
 
 if __name__ == "__main__":
+    import sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     raise SystemExit(_tu_kiem())

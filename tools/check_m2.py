@@ -22,6 +22,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
+for _s in (sys.stdout, sys.stderr):  # console Windows mac dinh cp1252
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 from pathlib import Path
 
 DAT, CANH, HONG = "ĐẠT", "CẢNH BÁO", "HỎNG"
