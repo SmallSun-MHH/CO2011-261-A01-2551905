@@ -27,6 +27,7 @@ import pulp
 
 from m2_ilp.model import (
     SCALE, _as_int_coef, _kiem_nghiem, build_params, soft_weights_from_seed, solve_week,
+    tai_ly_tuong,
 )
 from m2_ilp.preprocess import generate_location_preferences
 
@@ -75,8 +76,15 @@ def _tai(x, params, i):
 
 
 def _q(params):
-    tong_cap = sum(int(v) for v in params["capacity"].values())
-    return tong_cap // max(len(params["I"]), 1)
+    """Ủy quyền cho m2_ilp.model.tai_ly_tuong — KHÔNG chép lại công thức.
+
+    Sửa 23/10 (2551918 Nguyễn Phong Phú): bản gốc tự tính
+    `sum(capacity.values()) // |I|`, tức cộng cả ca không có cơ sở — loại ca mà
+    H4 cấm gán. Khi model.py sửa lại cho đúng, hai công thức lệch nhau và chính
+    phép kiểm của file này báo "mục tiêu tính lại != solver". Giữ một nguồn duy
+    nhất thì phép đối chứng mới nói lên điều nó định nói.
+    """
+    return tai_ly_tuong(params)
 
 
 def solve_pulp(params, seed_int, *, relax=False, time_limit=60):

@@ -133,9 +133,36 @@ def main():
                                     sort_keys=True), encoding="utf-8")
         print(f"[m2_model] Da ghi {_out.relative_to(repo_root)}\n")
 
-        # TODO (task 9, 10): baseline + chi so cong bang + doi chung PuLP + phan vi du.
+        # --- Buoc 2.8: doi chung PuLP + tuning khi infeasible ---
+        # Chay 12 instance ngau nhien trong run_all cho nhanh; ban day du 60
+        # instance chay rieng: `python m2_ilp/crosscheck_pulp.py`.
+        import subprocess
+        for lenh, nhan in (
+            ([sys.executable, "m2_ilp/crosscheck_pulp.py", "--trials", "12"],
+             "m2_ilp/crosscheck_pulp.py (req 2.8)"),
+            ([sys.executable, "m2_ilp/counterexample_lp_relax.py"],
+             "m2_ilp/counterexample_lp_relax.py (req 2.10)"),
+        ):
+            if subprocess.run(lenh, cwd=repo_root).returncode != 0:
+                sys.exit(f"[run_all] LOI: {nhan} that bai")
+
+        # TODO (task 9, req 2.9): m2_ilp/baseline.py + benchmark.py — trich
+        # baseline tu lich goc, do chi so cong bang va runtime. CHUA CO FILE.
+
+    # ======================================================================
+    #  Module 3 — Automata
+    # ======================================================================
     if a.stage in ("all", "m3"):
-        pass  # TODO: m3_automata-> load DFAs, product/minimization, regular->ILP, pumping
+        print(f"\n{'='*60}")
+        print(f"  MODULE 3 -- Automata  (seed={a.seed})")
+        print(f"{'='*60}")
+        import subprocess
+        rc = subprocess.run([sys.executable, "m3_automata/strings_from_data.py"],
+                            cwd=repo_root).returncode
+        if rc != 0:
+            sys.exit("[run_all] LOI: m3_automata/strings_from_data.py that bai")
+        # TODO (task 12-15): dfa_r1_r4.json, product_minimize.py,
+        # regular_to_ilp.py, pumping_proof.md
     if a.stage in ("all", "m4"):
         pass  # TODO: m4_dynamics-> recurrence, equilibrium, stability, plots
     if a.stage in ("all", "m5"):

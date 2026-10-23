@@ -417,6 +417,109 @@ def kiem_requirements(repo: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 5e. Hồi quy: AddAbsEquality phải trả TRỊ TUYỆT ĐỐI, kể cả khi âm
+# ---------------------------------------------------------------------------
+def kiem_tri_tuyet_doi(repo: Path) -> None:
+    """Chặn đúng lớp lỗi đã gặp ngày 23/10.
+
+    `AddAbsEquality(d, <biểu_thức>)` với một biểu thức affine KHÔNG lấy trị
+    tuyệt đối trong ortools 9.12 — nó ràng `d == <biểu_thức>`. Khi biểu thức âm:
+    miền d bắt đầu từ 0 -> INFEASIBLE; miền d có số âm -> SAI LẶNG LẼ.
+    Hai phép kiểm: (a) chạy thật `_l1_deviation` trên một ca có tải < q;
+    (b) quét mã, cấm truyền biểu thức (có dấu − hoặc +) vào AddAbsEquality.
+    """
+    ma = (
+        "import sys, json\n"
+        "sys.path.insert(0, %r)\n"
+        "from ortools.sat.python import cp_model\n"
+        "from m2_ilp.model import _l1_deviation\n"
+        "m = cp_model.CpModel()\n"
+        "li = m.NewIntVar(0, 4, 'li'); m.Add(li == 0)\n"
+        "devs, q = _l1_deviation(m, {'CB': li}, 1, ['a','b','c','d'])\n"
+        "s = cp_model.CpSolver(); st = s.Solve(m)\n"
+        "print(json.dumps({'status': s.StatusName(st),"
+        " 'dev': s.Value(devs[0]) if st in (2,4) else None}))\n"
+    ) % str(repo)
+    rc, out = chay([sys.executable, "-c", ma], repo, timeout=120)
+    if rc != 0:
+        bao(HONG, "Trị tuyệt đối L1", f"không chạy được phép kiểm (thoát {rc})\n" + out[-400:])
+    else:
+        try:
+            d = json.loads(out.strip().splitlines()[-1])
+        except (json.JSONDecodeError, IndexError):
+            bao(HONG, "Trị tuyệt đối L1", "không đọc được kết quả")
+            return
+        if d.get("dev") == 1:
+            bao(DAT, "Trị tuyệt đối L1", "tải 0 với q=1 -> độ lệch = 1 (đúng)")
+        else:
+            bao(HONG, "Trị tuyệt đối L1",
+                f"tải 0 với q=1 phải cho độ lệch 1, nhưng được "
+                f"status={d.get('status')} dev={d.get('dev')} — "
+                "AddAbsEquality đang nhận biểu thức thay vì biến")
+
+    xau = []
+    for f in sorted((repo / "m2_ilp").glob("*.py")):
+        try:
+            cay = ast.parse(f.read_text(encoding="utf-8"))
+        except SyntaxError:
+            continue
+        for n in ast.walk(cay):
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) \
+                    and n.func.attr in ("AddAbsEquality", "add_abs_equality") \
+                    and len(n.args) >= 2 and isinstance(n.args[1], ast.BinOp):
+                xau.append(f"{f.name}:{n.lineno}")
+    if xau:
+        bao(HONG, "AddAbsEquality",
+            "truyền BIỂU THỨC (không phải biến) tại " + ", ".join(xau)
+            + " — ortools không lấy trị tuyệt đối của biểu thức affine")
+    else:
+        bao(DAT, "AddAbsEquality", "chỉ nhận biến, không nhận biểu thức affine")
+
+
+# ---------------------------------------------------------------------------
+# 5f. Một nguồn duy nhất cho q, và mọi file M2/M3 đều được run_all.py gọi
+# ---------------------------------------------------------------------------
+def kiem_mot_nguon_q(repo: Path) -> None:
+    xau = []
+    for f in sorted((repo / "m2_ilp").glob("*.py")):
+        if f.name == "model.py":
+            continue
+        src = f.read_text(encoding="utf-8")
+        if re.search(r'sum\([^)]*capacity[^)]*\)\s*//', src):
+            xau.append(f.name)
+    if xau:
+        bao(HONG, "Một nguồn cho q",
+            "tự tính lại tải lý tưởng tại " + ", ".join(xau)
+            + " — phải gọi model.tai_ly_tuong(params)")
+    else:
+        bao(DAT, "Một nguồn cho q", "chỉ model.tai_ly_tuong định nghĩa q")
+
+
+def kiem_khong_mo_coi(repo: Path) -> None:
+    """Người chấm chạy `python run_all.py`. File không được nó gọi coi như chưa có."""
+    s = (repo / "run_all.py").read_text(encoding="utf-8")
+    can = {
+        "m2_ilp/preprocess.py": "preprocess",
+        "m2_ilp/model.py": "solve_week",
+        "m2_ilp/crosscheck_pulp.py": "crosscheck_pulp",
+        "m2_ilp/counterexample_lp_relax.py": "counterexample_lp_relax",
+        "m3_automata/strings_from_data.py": "strings_from_data",
+        "m2_ilp/baseline.py": "baseline",
+        "m2_ilp/benchmark.py": "benchmark",
+    }
+    mo_coi = [f for f, dau in can.items() if (repo / f).exists() and dau not in s]
+    if mo_coi:
+        bao(HONG, "File mồ côi",
+            "có trong repo nhưng run_all.py không gọi: " + ", ".join(mo_coi))
+    else:
+        bao(DAT, "File mồ côi", "mọi file M2/M3 đã có đều được run_all.py gọi")
+
+    thieu = [f for f in can if not (repo / f).exists()]
+    if thieu:
+        bao(CANH, "Đầu việc chưa có file", ", ".join(thieu))
+
+
+# ---------------------------------------------------------------------------
 # 6. Ô khuyết trong tài liệu (chỉ người thật điền được)
 # ---------------------------------------------------------------------------
 O_KHUYET = [("DECISIONS.md", r"\[GT-\d\]"),
@@ -455,8 +558,34 @@ def kiem_tien_trinh(repo: Path) -> None:
         return
     tags = set(out.split())
     tuan = sorted(t for t in tags if t.startswith("week-"))
-    bao(DAT if tuan else HONG, "Tag tuần",
-        ", ".join(tuan) if tuan else "chưa có tag week-* nào")
+
+    # Mỗi tag tuần THIẾU = −1% điểm môn, không hồi lại được. Phải liệt kê đúng
+    # những tuần ĐÃ TRÔI QUA mà không có tag, chứ không chỉ đếm xem có tag nào.
+    import datetime
+    bat_dau = datetime.date(2026, 9, 7)          # thứ Hai của week-01
+    hom_nay = datetime.date.today()
+    thieu, dang_dien_ra = [], None
+    for n in range(1, 15):
+        d1 = bat_dau + datetime.timedelta(days=7 * (n - 1))
+        d2 = d1 + datetime.timedelta(days=6)
+        if d1 > hom_nay:
+            break
+        ten = f"week-{n:02d}"
+        if ten in tags:
+            continue
+        if d1 <= hom_nay <= d2:
+            dang_dien_ra = (ten, d2)
+        else:
+            thieu.append(ten)
+    if thieu:
+        bao(HONG, "Tag tuần THIẾU",
+            f"{', '.join(thieu)} — mỗi tag thiếu là −1% điểm môn, KHÔNG tạo tag "
+            f"lùi ngày để bù (đã có: {', '.join(tuan) or 'không có'})")
+    else:
+        bao(DAT, "Tag tuần", ", ".join(tuan) if tuan else "chưa có tag week-* nào")
+    if dang_dien_ra:
+        ten, han = dang_dien_ra
+        bao(CANH, "Tag tuần này", f"{ten} chưa có — hạn Chủ nhật {han}")
 
     for t in tuan:
         rc, kind = chay(["git", "cat-file", "-t", t], repo, timeout=60)
@@ -501,6 +630,9 @@ def main() -> int:
     if truoc:
         kiem_tai_lap(repo, truoc)
     kiem_trong_so(repo)
+    kiem_tri_tuyet_doi(repo)
+    kiem_mot_nguon_q(repo)
+    kiem_khong_mo_coi(repo)
     kiem_nghiem_m2(repo)
     kiem_requirements(repo)
     kiem_o_khuyet(repo)

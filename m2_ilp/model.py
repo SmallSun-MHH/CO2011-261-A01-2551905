@@ -27,7 +27,7 @@ Hàm mục tiêu (2.7) — TỪ ĐIỂN (lexicographic), hai pha:
                 w_fair · Σᵢ |Load(i) − q|            (độ lệch L1)
               + w_loc  · Σ Viol_loc
               + w_load · Σ Viol_load
-            với q = ⌊ΣCap / |I|⌋ là tải lý tưởng nguyên.
+            với q = ⌊ΣCap(gán được) / |I|⌋ là tải lý tưởng nguyên.
 
 Vì sao hai pha chứ không gộp một hàm có trọng số: gộp lại thì một nghiệm
 "rất công bằng theo L1 nhưng có một người gánh 4 ca" có thể thắng một nghiệm
@@ -171,12 +171,54 @@ def _build(params: dict) -> tuple[cp_model.CpModel, dict, dict, Any]:
     return model, x, load, t
 
 
+def tai_ly_tuong(params: dict) -> int:
+    """q — tải lý tưởng nguyên của một giám thị: ⌊ΣCap(gán được) / |I|⌋.
+
+    NGUỒN DUY NHẤT. Mọi nơi cần q (model.py, crosscheck_pulp.py, báo cáo) phải
+    gọi hàm này, đừng chép lại công thức: ngày 23/10 hai bản chép rời nhau đã
+    lệch định nghĩa và `crosscheck_pulp.py` báo "mục tiêu tính lại != solver".
+
+    Chỉ cộng sức chứa của ca CÓ cơ sở xác định. Ca thiếu cơ sở bị H4 cấm gán và
+    H5 bỏ qua, nên sức chứa của nó không bao giờ được lấp; cộng vào sẽ đẩy q lên
+    cao giả tạo và đặt ra một mục tiêu công bằng không ai đạt được.
+    """
+    tong = sum(int(params["capacity"][j]) for j in params["J"]
+               if params["campus"].get(j))
+    return tong // max(len(params["I"]), 1)
+
+
 def _l1_deviation(model: cp_model.CpModel, load: dict, q: int, J: list) -> tuple[list, int]:
-    """Σᵢ |Load(i) − q| với q là tải lý tưởng nguyên. Trả (danh sách dev, q)."""
+    """Σᵢ |Load(i) − q| với q là tải lý tưởng nguyên. Trả (danh sách dev, q).
+
+    CẨN THẬN — đây là chỗ đã từng có lỗi SAI ÂM THẦM, do `crosscheck_pulp.py`
+    của Phúc bắt được (trial 11, seed 44782656) ngày 23/10:
+
+        model.AddAbsEquality(d, li - q)      # SAI khi li - q có thể ÂM
+
+    Với ortools 9.12.4544, truyền một BIỂU THỨC affine (`li - q`) vào
+    `AddAbsEquality` KHÔNG lấy trị tuyệt đối — nó ràng `d == li - q`. Hệ quả:
+      · d khai báo miền [0, ...]  -> bài toán thành INFEASIBLE khi có ai đó
+        tải thấp hơn q (|li−q| lẽ ra = 1 nhưng d bị ép = −1, ngoài miền);
+      · d khai báo miền có số âm  -> KHÔNG báo lỗi gì, nhưng "độ lệch" thành
+        số âm và hàm mục tiêu bị trừ đi thay vì cộng vào — sai lặng lẽ.
+    Kiểm lại bằng tay: li=0, q=1, d∈[−4,4] -> solver trả d = −1, không phải 1.
+
+    Trên lát dữ liệu thật của nhóm lỗi này KHÔNG lộ ra: q = 21//18 = 1 và mọi
+    tải đều là 1 hoặc 2, nên `li − q` không bao giờ âm. Chỉ phép đối chứng trên
+    instance ngẫu nhiên mới chạm tới. Đó đúng là lý do yêu cầu 2.8 tồn tại.
+
+    Cách viết dưới đây dùng một biến trung gian có miền phủ cả phần âm, nên
+    `AddAbsEquality` nhận đúng một BIẾN (dạng API bảo đảm đúng), và là đẳng
+    thức thật — không phụ thuộc vào việc hàm mục tiêu có đẩy d xuống hay không
+    (quan trọng khi M4 bơm `lambdas` vào).
+    """
+    bien_do = len(J) + abs(q)          # |li − q| ≤ max(len(J) − q, q) ≤ len(J) + |q|
     devs = []
     for i, li in load.items():
-        d = model.NewIntVar(0, len(J), f"dev[{i}]")
-        model.AddAbsEquality(d, li - q)
+        lech = model.NewIntVar(-bien_do, bien_do, f"lech[{i}]")
+        model.Add(lech == li - q)
+        d = model.NewIntVar(0, bien_do, f"dev[{i}]")
+        model.AddAbsEquality(d, lech)
         devs.append(d)
     return devs, q
 
@@ -218,8 +260,11 @@ def solve_week(
         seed_int = int(params.get("meta", {}).get("seed", 0))
     w_loc, w_load, w_fair = soft_weights_from_seed(seed_int)
 
-    tong_cap = sum(int(v) for v in params["capacity"].values())
-    q = tong_cap // max(len(I), 1)
+    # Chỉ tính trên sức chứa THỰC SỰ gán được: ca không có cơ sở bị H4 cấm gán
+    # và H5 bỏ qua, nên cộng nó vào tổng sẽ đẩy tải lý tưởng q lên cao giả tạo.
+    tong_cap = sum(int(params["capacity"][j]) for j in J if params["campus"].get(j))
+    tong_cap_khai_bao = sum(int(v) for v in params["capacity"].values())
+    q = tai_ly_tuong(params)
 
     t0 = time.perf_counter()
 
@@ -315,6 +360,8 @@ def solve_week(
             "phat_S2": round(w_load * tong_vi_pham_load, 4),
             "phat_cong_bang": round(w_fair * lech_l1_q, 4),
         },
+        "tong_capacity_gan_duoc": tong_cap,
+        "tong_capacity_khai_bao": tong_cap_khai_bao,
         "objective_scaled": int(s2.ObjectiveValue()),
         "objective": round(s2.ObjectiveValue() / SCALE, 4),
         "runtime_s": round(time.perf_counter() - t0, 3),
