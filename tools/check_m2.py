@@ -520,6 +520,40 @@ def kiem_khong_mo_coi(repo: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 5g. Yêu cầu 2.9 — nghiệm phải KHÔNG THUA lịch gốc ở bất kỳ chỉ số nào
+# ---------------------------------------------------------------------------
+def kiem_thang_baseline(repo: Path) -> None:
+    f = repo / "m2_ilp" / "out" / "benchmark.json"
+    if not f.exists():
+        bao(HONG, "Thắng baseline (2.9)",
+            "không có m2_ilp/out/benchmark.json sau khi chạy run_all.py")
+        return
+    d = json.loads(f.read_text(encoding="utf-8"))
+    tk = d.get("tong_ket", {})
+    thua = [r["chi_so"] for r in d.get("so_sanh", []) if r["ket_qua"] == "THUA"]
+    if thua:
+        bao(HONG, "Thắng baseline (2.9)", "THUA lịch gốc ở: " + ", ".join(thua))
+    elif not tk.get("thang"):
+        bao(HONG, "Thắng baseline (2.9)",
+            "hoà toàn bộ — không chứng minh được mô hình hơn lịch gốc")
+    else:
+        bao(DAT, "Thắng baseline (2.9)",
+            f"{tk['thang']} thắng · {tk.get('hoa', 0)} hoà · 0 thua · "
+            f"runtime trung vị {d.get('runtime_cpsat', {}).get('trung_vi_s')}s")
+
+    # baseline phai la lich GOC trich tu du lieu, khong phai so bia
+    inst = json.loads((repo / "data" / "instance_slice.json").read_text(encoding="utf-8-sig"))
+    n_goc = len(inst.get("baseline") or [])
+    n_bm = d.get("baseline", {}).get("so_luot_gan")
+    if n_goc and n_bm != n_goc:
+        bao(HONG, "Nguồn baseline",
+            f"benchmark dùng {n_bm} lượt gán nhưng instance['baseline'] có {n_goc}")
+    else:
+        bao(DAT, "Nguồn baseline",
+            f"{n_goc} lượt gán, trích thẳng từ instance['baseline'] (dữ liệu thật)")
+
+
+# ---------------------------------------------------------------------------
 # 6. Ô khuyết trong tài liệu (chỉ người thật điền được)
 # ---------------------------------------------------------------------------
 O_KHUYET = [("DECISIONS.md", r"\[GT-\d\]"),
@@ -634,6 +668,7 @@ def main() -> int:
     kiem_mot_nguon_q(repo)
     kiem_khong_mo_coi(repo)
     kiem_nghiem_m2(repo)
+    kiem_thang_baseline(repo)
     kiem_requirements(repo)
     kiem_o_khuyet(repo)
     kiem_tien_trinh(repo)

@@ -146,8 +146,15 @@ def main():
             if subprocess.run(lenh, cwd=repo_root).returncode != 0:
                 sys.exit(f"[run_all] LOI: {nhan} that bai")
 
-        # TODO (task 9, req 2.9): m2_ilp/baseline.py + benchmark.py — trich
-        # baseline tu lich goc, do chi so cong bang va runtime. CHUA CO FILE.
+        # --- Buoc 2.9: baseline tu lich goc + doi chieu cong bang ---
+        # benchmark.py thoat 1 neu nghiem THUA lich goc o bat ky chi so nao,
+        # nen run_all dung ngay thay vi im lang di tiep.
+        for lenh, nhan in (
+            ([sys.executable, "m2_ilp/baseline.py"], "m2_ilp/baseline.py (req 2.9)"),
+            ([sys.executable, "m2_ilp/benchmark.py"], "m2_ilp/benchmark.py (req 2.9)"),
+        ):
+            if subprocess.run(lenh, cwd=repo_root).returncode != 0:
+                sys.exit(f"[run_all] LOI: {nhan} that bai")
 
     # ======================================================================
     #  Module 3 — Automata
