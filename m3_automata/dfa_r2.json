@@ -1,0 +1,38 @@
+{
+  "states": [
+    "q_safe",
+    "q_after_N",
+    "trap"
+  ],
+  "alphabet": [
+    "M",
+    "A",
+    "N",
+    "-"
+  ],
+  "start": "q_safe",
+  "accepting": [
+    "q_safe",
+    "q_after_N"
+  ],
+  "transitions": {
+    "q_safe": {
+      "M": "q_safe",
+      "A": "q_safe",
+      "N": "q_after_N",
+      "-": "q_safe"
+    },
+    "q_after_N": {
+      "-": "q_safe",
+      "M": "trap",
+      "A": "trap",
+      "N": "trap"
+    },
+    "trap": {
+      "M": "trap",
+      "A": "trap",
+      "N": "trap",
+      "-": "trap"
+    }
+  }
+}
