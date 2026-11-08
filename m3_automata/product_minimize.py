@@ -170,6 +170,98 @@ def la_toi_thieu(M: dict) -> bool:
     return len(P) == len(Q) and seen == Q
 
 
+def bang_myhill_nerode(M: dict) -> dict:
+    """Xây dựng bảng hậu tố phân biệt ngắn nhất (Myhill–Nerode witness table)
+    cho mọi cặp trạng thái phân biệt (p, q) của DFA tối thiểu M.
+
+    Theo Định lý Myhill–Nerode, M tối thiểu (và mọi trạng thái đạt tới được) khi
+    và chỉ khi với mọi cặp trạng thái p != q thuộc Q, tồn tại ít nhất một chuỗi
+    hậu tố z in Sigma* sao cho delta*(p, z) in F <=> delta*(q, z) not in F.
+
+    Thuật toán (qui hoạch động ngược / BFS trên đồ thị cặp trạng thái):
+      - Khởi tạo ở độ dài 0 (z = ""): mọi cặp (p, q) có (p in F) != (q in F).
+      - Lan truyền ngược theo ký hiệu s in Sigma: nếu cặp (p', q') đã phân biệt
+        bởi chuỗi z, thì mọi cặp (p, q) có delta(p, s) = p' và delta(q, s) = q'
+        chưa có nhân chứng sẽ được phân biệt bởi chuỗi s + z (ngắn nhất, thứ tự
+        từ điển theo SIGMA).
+    """
+    states = list(M["states"])
+    n = len(states)
+    idx = {q: i for i, q in enumerate(states)}
+    F = set(M["accepting"])
+    T = M["transitions"]
+
+    # Nghịch ảnh theo từng ký hiệu: rev[s][q2] = danh sách trạng thái q có delta(q, s) = q2
+    rev = {s: {q: [] for q in states} for s in SIGMA}
+    for q in states:
+        for s in SIGMA:
+            rev[s][T[q][s]].append(q)
+
+    # Lưu nhân chứng ngắn nhất cho cặp có thứ tự chuẩn (i < j)
+    witness: dict[tuple[int, int], str] = {}
+    queue: deque[tuple[int, int]] = deque()
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if (states[i] in F) != (states[j] in F):
+                witness[(i, j)] = ""
+                queue.append((i, j))
+
+    while queue:
+        i, j = queue.popleft()
+        z = witness[(i, j)]
+        qi, qj = states[i], states[j]
+        for s in SIGMA:
+            preds_i = rev[s][qi]
+            preds_j = rev[s][qj]
+            if not preds_i or not preds_j:
+                continue
+            sz = s + z
+            for pi in preds_i:
+                ii = idx[pi]
+                for pj in preds_j:
+                    jj = idx[pj]
+                    if ii == jj:
+                        continue
+                    pair = (ii, jj) if ii < jj else (jj, ii)
+                    if pair not in witness:
+                        witness[pair] = sz
+                        queue.append(pair)
+
+    tong_cap = n * (n - 1) // 2
+    # Kiểm chứng trực tiếp từng nhân chứng: chạy từ p và từ q phải khác kết quả chấp nhận
+    cap_sai = []
+    for (i, j), z in witness.items():
+        p, q = states[i], states[j]
+        for ch in z:
+            p = T[p][ch]
+            q = T[q][ch]
+        if (p in F) == (q in F):
+            cap_sai.append((states[i], states[j], z))
+
+    phan_bo_do_dai: dict[int, int] = {}
+    for z in witness.values():
+        phan_bo_do_dai[len(z)] = phan_bo_do_dai.get(len(z), 0) + 1
+
+    # Lấy mẫu các cặp có hậu tố phân biệt dài nhất để đưa vào báo cáo
+    do_dai_max = max(phan_bo_do_dai) if phan_bo_do_dai else 0
+    mau_dai_nhat = [
+        {"cap": [states[i], states[j]], "hau_to": z, "do_dai": len(z)}
+        for (i, j), z in sorted(witness.items())
+        if len(z) == do_dai_max
+    ][:10]
+
+    return {
+        "tong_cap_trang_thai": tong_cap,
+        "so_cap_phan_biet_duoc": len(witness),
+        "tat_ca_phan_biet_duoc": len(witness) == tong_cap and not cap_sai,
+        "so_nhan_chung_sai": len(cap_sai),
+        "do_dai_hau_to_max": do_dai_max,
+        "phan_bo_do_dai_hau_to": {str(k): phan_bo_do_dai[k] for k in sorted(phan_bo_do_dai)},
+        "mau_cap_hau_to_dai_nhat": mau_dai_nhat,
+    }
+
+
 def ngon_ngu_rong(D: dict) -> tuple[bool, str | None]:
     """L(D) = ∅ ? Nếu không, trả chuỗi ngắn nhất thuộc L(D)."""
     seen, hang = {D["start"]: ""}, deque([D["start"]])
@@ -234,6 +326,9 @@ def main() -> int:
         loi.append(f"DFA tối thiểu KHÁC ngôn ngữ DFA tích, phản ví dụ {pv!r}")
     if not la_toi_thieu(M):
         loi.append("DFA tối thiểu vẫn còn cặp trạng thái tương đương hoặc trạng thái không đạt tới")
+    mn = bang_myhill_nerode(M)
+    if not mn["tat_ca_phan_biet_duoc"]:
+        loi.append("Bảng Myhill–Nerode không phủ hết mọi cặp trạng thái hoặc có nhân chứng sai")
     dem = 0
     for L in range(9):
         for tt in itertools.product(SIGMA, repeat=L):
@@ -250,7 +345,9 @@ def main() -> int:
             loi.append(f"lệch AND của 4 DFA gốc trên chuỗi thật của {gt}")
 
     print(f"\n  tương đương chính xác    : {'ĐẠT' if td else 'HỎNG'} — BFS trên tích (tích × tối thiểu)")
-    print(f"  tối thiểu (Myhill–Nerode): {'ĐẠT' if la_toi_thieu(M) else 'HỎNG'} — Hopcroft lần 2 không gộp thêm")
+    print(f"  tối thiểu (Myhill–Nerode): {'ĐẠT' if la_toi_thieu(M) and mn['tat_ca_phan_biet_duoc'] else 'HỎNG'} — "
+          f"Hopcroft lần 2 không gộp thêm; {mn['so_cap_phan_biet_duoc']:,}/{mn['tong_cap_trang_thai']:,} cặp "
+          f"có hậu tố phân biệt ngắn nhất (độ dài ≤ {mn['do_dai_hau_to_max']})")
     print(f"  khớp AND 4 DFA gốc       : {'ĐẠT' if not any('lệch' in l for l in loi) else 'HỎNG'} — "
           f"{dem:,} chuỗi dài ≤ 8 + {len(chuoi_that)} chuỗi thật")
     if chuoi_that:
@@ -280,7 +377,8 @@ def main() -> int:
                           "toi_thieu_chap_nhan": len(M["accepting"])},
         "kiem_chung": {"tuong_duong_chinh_xac": td, "toi_thieu": la_toi_thieu(M),
                        "so_chuoi_vet_can": dem, "so_chuoi_that": len(chuoi_that),
-                       "giam_thi_that_thoa_ca_4": nhan},
+                       "giam_thi_that_thoa_ca_4": nhan,
+                       "myhill_nerode": mn},
         "luat_thua": lt,
         "loi": loi,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

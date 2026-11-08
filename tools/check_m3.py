@@ -104,14 +104,15 @@ def kiem_tich(repo):
         return
     d = json.loads(f.read_text(encoding="utf-8"))
     kc, st = d["kiem_chung"], d["so_trang_thai"]
+    mn = kc.get("myhill_nerode", {})
     if not kc["tuong_duong_chinh_xac"]:
         bao(HONG, "Tích + tối thiểu (3.2)", "DFA tối thiểu KHÁC ngôn ngữ DFA tích")
-    elif not kc["toi_thieu"]:
-        bao(HONG, "Tích + tối thiểu (3.2)", "DFA 'tối thiểu' vẫn còn trạng thái tương đương")
+    elif not kc["toi_thieu"] or not mn.get("tat_ca_phan_biet_duoc"):
+        bao(HONG, "Tích + tối thiểu (3.2)", "DFA 'tối thiểu' vẫn còn trạng thái tương đương hoặc thiếu nhân chứng Myhill–Nerode")
     else:
         bao(DAT, "Tích + tối thiểu (3.2)",
             f"{st['tich_ly_thuyet']:,} lý thuyết → {st['tich_dat_toi']:,} đạt tới → "
-            f"{st['toi_thieu']} tối thiểu · tương đương chính xác + tối thiểu đã chứng minh")
+            f"{st['toi_thieu']} tối thiểu · {mn['so_cap_phan_biet_duoc']:,}/{mn['tong_cap_trang_thai']:,} cặp Myhill–Nerode (|z|≤{mn['do_dai_hau_to_max']})")
     thua = [t.upper() for t, v in d["luat_thua"].items() if v["thua"]]
     if thua:
         bao(HONG, "Luật thừa", ", ".join(thua) + " bị các luật còn lại kéo theo — không thêm ràng buộc nào")

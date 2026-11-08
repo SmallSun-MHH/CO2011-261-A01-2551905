@@ -32,7 +32,7 @@ Cả bốn là DFA **an toàn**: mọi trạng thái trừ `trap` đều chấp 
 
 **3.2** — 8,352 trạng thái lý thuyết → 3,108 đạt tới → **155 sau tối thiểu**
 (154 chấp nhận + 1 bẫy). Tương đương với DFA tích được chứng minh bằng BFS trên tích (không lấy mẫu);
-tính tối thiểu được chứng minh bằng chạy lại Hopcroft không gộp thêm được gì. Cả 4 luật đều cần thiết — mỗi luật có một chuỗi
+tính tối thiểu được chứng minh theo hai cách độc lập: (i) chạy lại Hopcroft không gộp thêm được gì, và (ii) lập bảng hậu tố phân biệt ngắn nhất theo định lý Myhill–Nerode cho toàn bộ $\binom{155}{2} = 11{,}935$ cặp trạng thái phân biệt (mọi cặp đều có nhân chứng $z \in \Sigma^*$ độ dài $\le 10$ sao cho đúng một trong hai trạng thái dẫn tới chấp nhận; ba cặp cần hậu tố dài nhất 10 là `(s56, s57)` với `--MM-MM--M`, `(s56, s63)` với `--AA-AA--A`, `(s57, s63)` với `--M--MM-MM`). Cả 4 luật đều cần thiết — mỗi luật có một chuỗi
 chỉ mình nó chặn: R1 `MMM`, R2 `NM`,
 R3 `MM-MM-M`, R4 `MM-MM--MM`.
 

@@ -7,8 +7,8 @@ Hai chế độ:
   2. UNSAT (unsat-core): siết instance cho bất khả thỏa, trích lõi mâu thuẫn
      bằng selector-literal + Glucose3.solve(assumptions=...).
 
-Người làm: (điền tên thành viên)
-Reviewed:  (điền tên reviewer)
+Người làm: 2551907 Trần Tuấn Kiệt, 2551905 Trần Anh Khôi
+Reviewed:  2551905 Trần Anh Khôi
 """
 
 import json

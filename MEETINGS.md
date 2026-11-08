@@ -100,3 +100,20 @@
   bai dung de kiem quyen tac gia, khong chep tu cho khac)_
 - **Vuong mac:** _(dien)_
 - **Phan viec tuan toi:** _(dien)_
+
+## 2026-11-08 (week-08 & week-09: 2026-10-26 - 2026-11-08)
+
+**Bang chung git co that trong tuan** (sinh tu `git log`, khong sua):
+  - `388e273` 2026-11-08 · 2551918 Nguyen Phong Phu · m3: sinh lai DFA R3/R4 tu hieu chinh, tich + Hopcroft 155 trang thai, AddAutomaton vao ILP 73x27 ngay toi uu, check_m3 (req 3.1-3.4)
+  - `7c27d85` 2026-11-03 · 2551909 Tran Bui Bao Long · Complete task 3.4b and 3.4c: Pumping lemma proof and verification script
+  - `4fe71a8` 2026-11-02 · 2551907 Tran Tuan Kiet · Update 4 file DFA JSON cho các quy tắc R1, R2, R3, R4 (Mã YC 3.1 + 3.4a)
+
+**Tag tuan:** `week-08` **KHONG CO TAG** (mat 1% diem mon) · `week-09` va `m3` da tag ngay 08/11.
+
+- **Ghi nhan rà soát & đóng góp ngày 08/11 (2551905 Trần Anh Khôi):**
+  - Đã đọc và chạy kiểm chứng toàn bộ các bài nộp M2 và M3 của nhóm (`preprocess.py`, `model.py`, `soft.py`, `crosscheck_pulp.py`, `baseline.py`, `benchmark.py`, `counterexample_lp_relax.py`, `strings_from_data.py`, `build_dfas.py`, `product_minimize.py`, `regular_to_ilp.py`, `pumping_proof.md`, `check_pumping.py`).
+  - Bổ sung hàm `bang_myhill_nerode` vào `m3_automata/product_minimize.py` để xuất bảng hậu tố phân biệt ngắn nhất cho toàn bộ $\binom{155}{2} = 11{,}935$ cặp trạng thái của DFA tích tối thiểu (chiều dài hậu tố tối đa $\le 10$), cập nhật `tools/check_m3.py` và hoàn thiện quyết định thiết kế D9–D15 trong `DECISIONS.md`.
+- **Phan viec tuan toi (Module 4 — Dynamics, week-10 & week-11):**
+  - Phúc (2551920): `m4_dynamics/markov.py` (YC 4.1–4.3, hạn nội bộ 12/11).
+  - Long (2551909): `m4_dynamics/experiment.py` vòng lặp đóng (YC 4.4, hạn nội bộ 15/11).
+  - Khôi (2551905): Tham gia đóng góp trực tiếp vào `m4_dynamics/` (phân tích độ nhạy $\lambda$, kiểm chứng phân phối dừng và hội tụ TV distance) để đảm bảo đủ commit trên cả 4 module.
