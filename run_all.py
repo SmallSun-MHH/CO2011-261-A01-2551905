@@ -164,12 +164,19 @@ def main():
         print(f"  MODULE 3 -- Automata  (seed={a.seed})")
         print(f"{'='*60}")
         import subprocess
-        rc = subprocess.run([sys.executable, "m3_automata/strings_from_data.py"],
-                            cwd=repo_root).returncode
-        if rc != 0:
-            sys.exit("[run_all] LOI: m3_automata/strings_from_data.py that bai")
-        # TODO (task 12-15): dfa_r1_r4.json, product_minimize.py,
-        # regular_to_ilp.py, pumping_proof.md
+        # 3.1 chuoi that + hieu chinh k, c  ->  3.1/3.4a kiem 4 DFA khop vi tu
+        # ->  3.2 tich + toi thieu  ->  3.4b/c bo de bom  ->  3.3 AddAutomaton vao ILP
+        # build_dfas chay --check: KHONG ghi de file da commit, chi bao HONG neu
+        # dfa_r*.json lech khoi tham so hieu chinh hoac lech vi tu brute-force.
+        for lenh, nhan in (
+            ([sys.executable, "m3_automata/strings_from_data.py"], "strings_from_data.py (req 3.1)"),
+            ([sys.executable, "m3_automata/build_dfas.py", "--check"], "build_dfas.py --check (req 3.1, 3.4a)"),
+            ([sys.executable, "m3_automata/product_minimize.py"], "product_minimize.py (req 3.2)"),
+            ([sys.executable, "m3_automata/check_pumping.py"], "check_pumping.py (req 3.4b, 3.4c)"),
+            ([sys.executable, "m3_automata/regular_to_ilp.py"], "regular_to_ilp.py (req 3.3)"),
+        ):
+            if subprocess.run(lenh, cwd=repo_root).returncode != 0:
+                sys.exit(f"[run_all] LOI: m3_automata/{nhan} that bai")
     if a.stage in ("all", "m4"):
         pass  # TODO: m4_dynamics-> recurrence, equilibrium, stability, plots
     if a.stage in ("all", "m5"):

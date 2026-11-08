@@ -11,3 +11,4 @@ m2_ilp/out/
 
 # moi truong ao Python 3.12 cuc bo
 .venv/
+m3_automata/out/
