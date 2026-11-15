@@ -37,7 +37,27 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 | 3.4b, 3.4c | `m3_automata/pumping_proof.md`, `check_pumping.py` | 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Giao voi M*A* roi bo de bom |
 | — | `tools/check_m2.py`, `tools/check_m3.py` | 2551918 Nguyen Phong Phu, 2551905 Tran Anh Khoi | 2551905 Tran Anh Khoi | Cong tu kiem M2, M3 (Khoi bo sung kiem bang Myhill-Nerode trong `check_m3.py`) |
 
-Cot Reviewer ghi nguoi DA THUC SU doc code, chay kiem chung va duyet (Khoi `2551905` ra soat toan bo M2–M3 ngay 08/11/2026).
+## Module 4 — Dynamical Systems (yeu cau 4.1–4.4)
+
+| Req | File | Primary owner | Reviewer | Ghi chu |
+|---|---|---|---|---|
+| 4.1 | `m4_dynamics/calibrate.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 16 (chừa lại để Kiệt nộp PR)**; trong khi chờ, `recurrence.py` cung cấp fallback `load_or_fit_params()` |
+| 4.1–4.2 | `m4_dynamics/recurrence.py` | 2551905 Tran Anh Khoi, 2551920 Nguyen Quang Phuc | 2551905 Tran Anh Khoi | Task 17: Phương trình sai phân $F_{i,n+1}$, điểm bất động $F^* = 7/6$, chứng minh Lyapunov & bác bỏ bộ tích lũy trị riêng 1 |
+| 4.3 | `m4_dynamics/rolling_horizon.py` | 2551905 Tran Anh Khoi, 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Task 18: Vòng lặp đóng $N=60$ kỳ gọi `solve_week(params, lambdas)` đạt spread = 0, Jain = 1.0000 |
+| 4.3 | `m4_dynamics/simulate.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu | 2551905 Tran Anh Khoi | Task 19 (Autograder 5đ): Hội tụ $|F_{i,60}-F^*| = 3.30\times 10^{-7} < 10^{-3}$, xuất 2 biểu đồ |
+| 4.4 | `m4_dynamics/perturbation.py`, `tools/check_m4.py` | 2551905 Tran Anh Khoi | 2551905 Tran Anh Khoi | **Task 20 (Khôi Lead)**: Nhiễu loạn nghỉ ốm, thời gian hồi phục $\tau_{\text{rec}}=20$ kỳ, độ nhạy $\gamma$, Xích Markov 3 trạng thái & cổng kiểm định `check_m4.py` |
+
+## Module 5 — Interactive Application & Integration (yeu cau 5.1–5.2)
+
+| Req | File | Primary owner | Reviewer | Ghi chu |
+|---|---|---|---|---|
+| 5.1 | `app/app.py` | 2551905 Tran Anh Khoi | 2551905 Tran Anh Khoi | **Task 21 (Khôi Lead M5)**: Khung ứng dụng Streamlit 3 tab, sidebar trạng thái M1–M5, fallback Tab 2 |
+| 5.1 | `run_all.py` (nhánh `m4`, `m5`) | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu | 2551905 Tran Anh Khoi | Task 22: Nối tự động pipeline M4 và kiểm tra cú pháp M5 |
+| 5.2 | `app/views/plan.py` | 2551905 Tran Anh Khoi, 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Task 23: Tab 1 (M1 SAT/MUS + M2 CP-SAT vs Baseline + What-if Solver trực tiếp) |
+| 5.2 | `app/views/temporal.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 24 (chừa lại để Kiệt nộp PR)**; `app/app.py` tích hợp sẵn `_render_temporal_fallback()` |
+| 5.2 | `app/views/dynamics.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu, 2551920 Nguyen Quang Phuc | 2551905 Tran Anh Khoi | Task 25: Tab 3 (Quỹ đạo hội tụ $F^*$, công bằng Jain/Gini, nhiễu loạn, Xích Markov & simulator tương tác) |
+
+Cot Reviewer ghi nguoi DA THUC SU doc code, chay kiem chung va duyet (Khoi `2551905` ra soat toan bo M2–M3 ngay 08/11/2026 va M4–M5 ngay 15/11/2026).
 
 ## Ghi chu ve danh tinh git
 

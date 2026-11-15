@@ -1,0 +1,61 @@
+{
+  "chosen_direction": "M4-A: Closed-loop rolling-horizon fatigue (coupled with M4-B vector spread)",
+  "parameters": {
+    "a": 0.760528,
+    "b": 0.339252,
+    "r": 0.139692,
+    "l_bar": 1.16666667,
+    "rho_bar": 0.83333333,
+    "max_load_ref": 2.0
+  },
+  "equilibrium": {
+    "F_star_analytical": 1.16666667,
+    "observed_mean_load": 1.16666667,
+    "matches_observed_load": true,
+    "fixed_point_equation_residual": 0.0,
+    "is_valid_fixed_point": true
+  },
+  "stability": {
+    "classification": "Asymptotically Stable (Global Contraction)",
+    "jacobian_spectral_radius": 0.760528,
+    "inside_unit_circle": true,
+    "contraction_per_6_period_cycle": 0.193505,
+    "half_life_periods": 2.5321,
+    "lyapunov_monotone_decreasing": true,
+    "1d_convergence_error_at_80": 3.5988456659197254e-10
+  },
+  "why_not_raw_accumulator": {
+    "accumulator_equation": "w_{n+1} = w_n + A_n x_n",
+    "jacobian_matrix": "I_{|I|} (Identity matrix)",
+    "eigenvalues": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "has_nontrivial_fixed_point": false,
+    "reason": "Phương trình tích lũy tải thô w_{n+1} = w_n + A_n x_n có ma trận Jacobi J = I (mọi trị riêng bằng 1 nằm trên đường tròn đơn vị). Giải w* = w* + l_bar dẫn tới l_bar = 0 (vô lý vì tổng sức chứa mỗi kỳ là 21 > 0). Do đó w_n tăng tuyến tính ra vô cùng (w_n ~ n * l_bar -> inf), không phải hệ động lực có điểm cân bằng ổn định. Động lực thực sự nằm ở phương trình mệt mỏi có suy giảm 0 < a < 1 và phản hồi đóng λ_i(F_{i,n})."
+  },
+  "fairness_connection": {
+    "open_loop_F_star_high_load_2": 2.833333,
+    "open_loop_F_star_low_load_1": 0.833333,
+    "open_loop_permanent_spread": 2.0,
+    "closed_loop_F_star_all_staff": 1.166667,
+    "closed_loop_equilibrium_spread": 0.0,
+    "explanation": "Nếu không đóng vòng phản hồi (λ_i = 0), 3 giám thị nhận 2 ca/kỳ hội tụ về F*_high = 2.8333 còn 15 giám thị nhận 1 ca/kỳ hội tụ về F*_low = 0.8333, tạo độ lệch bất công vĩnh viễn ΔF* = 2.0000. Khi đóng vòng phản hồi bằng λ_i(F_{i,n}), bộ giải CP-SAT tự động xoay vòng 3 suất ca kép qua cả 18 giám thị sau mỗi 6 kỳ, đưa tải trung bình dài hạn của mọi giám thị về đúng l_bar = 7/6 và ép toàn bộ 18 quỹ đạo hội tụ về cùng một điểm cân bằng công bằng F* = 1.1667 (spread -> 0)."
+  }
+}

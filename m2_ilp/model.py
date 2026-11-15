@@ -362,7 +362,7 @@ def solve_week(
         },
         "tong_capacity_gan_duoc": tong_cap,
         "tong_capacity_khai_bao": tong_cap_khai_bao,
-        "objective_scaled": int(s2.ObjectiveValue()),
+        "objective_scaled": round(s2.ObjectiveValue()),
         "objective": round(s2.ObjectiveValue() / SCALE, 4),
         "runtime_s": round(time.perf_counter() - t0, 3),
         "lambdas_da_dung": bool(lambdas),

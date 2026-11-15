@@ -1,0 +1,72 @@
+{
+  "module": "m4_dynamics.simulate",
+  "n_periods": 60,
+  "calibration": {
+    "a": 0.760528,
+    "b": 0.339252,
+    "r": 0.139692,
+    "l_bar": 1.16666667,
+    "rho_bar": 0.83333333,
+    "F_star": 1.16666667,
+    "stability_classification": "Asymptotically Stable (Global Contraction)"
+  },
+  "equilibrium_verification": {
+    "F_star_analytical": 1.16666667,
+    "simulated_mean_final": 1.166667,
+    "simulated_min_final": 1.166667,
+    "simulated_max_final": 1.166667,
+    "max_abs_err_to_F_star": 3.29999999992836e-07,
+    "mean_abs_err_to_F_star": 3.29999999992836e-07,
+    "raw_pulse_cycle_mean_max_err": 1.6333333352491763e-07,
+    "tolerance_threshold": 0.001,
+    "within_tolerance_1e_3": true,
+    "lyapunov_monotone_decreasing": true,
+    "all_hard_constraints_satisfied": true
+  },
+  "closed_loop_final": {
+    "period": 60,
+    "status": "OPTIMAL",
+    "hard_constraints_ok": true,
+    "objective": 24.97,
+    "load_min": 1,
+    "load_max": 2,
+    "cum_load_spread": 0,
+    "cum_load_l1": 0.0,
+    "cum_load_jain": 1.0,
+    "cum_load_gini": 0.0,
+    "fatigue_eff_mean": 1.166667,
+    "fatigue_eff_spread": 0.0,
+    "fatigue_eff_jain": 1.0,
+    "fatigue_eff_gini": 0.0,
+    "max_abs_err_to_F_star": 0.0,
+    "mean_abs_err_to_F_star": 0.0,
+    "lyapunov_V": 0.0,
+    "fatigue_raw_mean": 1.166667,
+    "fatigue_raw_spread": 0.44276
+  },
+  "open_loop_final": {
+    "period": 60,
+    "status": "OPTIMAL",
+    "hard_constraints_ok": true,
+    "objective": 3.99,
+    "load_min": 1,
+    "load_max": 2,
+    "cum_load_spread": 60,
+    "cum_load_l1": 300.0,
+    "cum_load_jain": 0.907407,
+    "cum_load_gini": 0.119048,
+    "fatigue_eff_mean": 1.166667,
+    "fatigue_eff_spread": 2.0,
+    "fatigue_eff_jain": 0.710145,
+    "fatigue_eff_gini": 0.238095,
+    "max_abs_err_to_F_star": 1.666666,
+    "mean_abs_err_to_F_star": 0.0,
+    "lyapunov_V": 9.99999682,
+    "fatigue_raw_mean": 1.166667,
+    "fatigue_raw_spread": 2.0
+  },
+  "plots": {
+    "fatigue_trajectories": "m4_dynamics/out/fatigue_trajectories.png",
+    "fairness_convergence": "m4_dynamics/out/fairness_convergence.png"
+  }
+}

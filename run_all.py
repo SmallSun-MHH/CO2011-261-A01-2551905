@@ -177,10 +177,50 @@ def main():
         ):
             if subprocess.run(lenh, cwd=repo_root).returncode != 0:
                 sys.exit(f"[run_all] LOI: m3_automata/{nhan} that bai")
+    # ======================================================================
+    #  Module 4 — Dynamical Systems (Closed-Loop Rolling-Horizon Fatigue)
+    # ======================================================================
     if a.stage in ("all", "m4"):
-        pass  # TODO: m4_dynamics-> recurrence, equilibrium, stability, plots
+        print(f"\n{'='*60}")
+        print(f"  MODULE 4 -- Dynamical Systems & Rolling-Horizon  (seed={a.seed})")
+        print(f"{'='*60}")
+        import subprocess
+        calib_script = repo_root / "m4_dynamics" / "calibrate.py"
+        if calib_script.exists():
+            if subprocess.run([sys.executable, "m4_dynamics/calibrate.py"], cwd=repo_root).returncode != 0:
+                sys.exit("[run_all] LOI: m4_dynamics/calibrate.py that bai")
+        else:
+            print("[m4_calibrate] Dung load_or_fit_params() trong m4_dynamics/recurrence.py (cho Task 16 calibrate.py)")
+
+        for lenh, nhan in (
+            ([sys.executable, "m4_dynamics/recurrence.py"], "recurrence.py (Task 17)"),
+            ([sys.executable, "m4_dynamics/rolling_horizon.py"], "rolling_horizon.py (Task 18)"),
+            ([sys.executable, "m4_dynamics/simulate.py"], "simulate.py (Task 19 — Autograder)"),
+            ([sys.executable, "m4_dynamics/perturbation.py"], "perturbation.py (Task 20)"),
+        ):
+            if subprocess.run(lenh, cwd=repo_root).returncode != 0:
+                sys.exit(f"[run_all] LOI: m4_dynamics/{nhan} that bai")
+
+    # ======================================================================
+    #  Module 5 — Interactive Application & Precomputed Artifacts Check
+    # ======================================================================
     if a.stage in ("all", "m5"):
-        pass  # TODO: (optional) precompute artifacts the Streamlit app loads
+        print(f"\n{'='*60}")
+        print(f"  MODULE 5 -- Interactive Streamlit App Verification  (seed={a.seed})")
+        print(f"{'='*60}")
+        import py_compile
+        for rel_py in ("app/app.py", "app/views/plan.py", "app/views/dynamics.py"):
+            p_py = repo_root / rel_py
+            if not p_py.exists():
+                sys.exit(f"[run_all] LOI: Thieu tep ung dung M5 {rel_py}")
+            py_compile.compile(str(p_py), doraise=True)
+        temp_py = repo_root / "app" / "views" / "temporal.py"
+        if temp_py.exists():
+            py_compile.compile(str(temp_py), doraise=True)
+            print("[m5_app] OK - Da kiem tra cu phap app/app.py + 3 views (plan, temporal, dynamics)")
+        else:
+            print("[m5_app] OK - Da kiem tra cu phap app/app.py + plan.py + dynamics.py (Tab 2 dung fallback cho Task 24 temporal.py)")
+        print("[m5_app] Khoi chay giao dien: streamlit run app/app.py")
 
     print(f"[run_all] seed={a.seed} stage={a.stage}: done.")
 

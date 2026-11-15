@@ -117,3 +117,21 @@
   - Phúc (2551920): `m4_dynamics/markov.py` (YC 4.1–4.3, hạn nội bộ 12/11).
   - Long (2551909): `m4_dynamics/experiment.py` vòng lặp đóng (YC 4.4, hạn nội bộ 15/11).
   - Khôi (2551905): Tham gia đóng góp trực tiếp vào `m4_dynamics/` (phân tích độ nhạy $\lambda$, kiểm chứng phân phối dừng và hội tụ TV distance) để đảm bảo đủ commit trên cả 4 module.
+
+## 2026-11-15 (week-10: 2026-11-09 - 2026-11-15)
+
+**Tag tuan:** `week-10`
+
+- **Co mat:** Khôi (2551905), Long (2551909), Kiệt (2551907), Phú (2551918), Phúc (2551920).
+- **Da ra quyet dinh gi (2551905 Trần Anh Khôi ghi nhận):**
+  - Thống nhất chọn **Hướng M4-A (Closed-Loop Rolling-Horizon Fatigue Dynamics)** làm mô hình chính thức của Module 4 theo cấu trúc trong `IAP_tracker.xlsx` (`calibrate.py`, `recurrence.py`, `rolling_horizon.py`, `simulate.py`, `perturbation.py`), đồng thời tích hợp luôn kiểm chứng Xích Markov 3 trạng thái khả dụng (`Rest`, `Day`, `Night`) vào `m4_dynamics/perturbation.py` để giữ trọn vẹn nội dung đã bàn ở cuối tuần 09.
+  - Chốt cơ chế phản hồi đơn điệu bị chặn `compute_feedback_lambdas` vượt ngưỡng vị trí $w_{\text{loc}} = 0.71$ và dưới ngưỡng suy biến tải $2w_{\text{fair}} - w_{\text{loc}} = 1.95$, giúp xoay vòng đều 3 suất ca kép qua cả 18 giám thị sau mỗi chu kỳ $W = 6$ kỳ (spread tải tích lũy $= 0$, Jain $= 1.0000$, $|F_{i,60} - F^*| = 3.30 \times 10^{-7} < 10^{-3}$).
+  - Khôi (`2551905`) chủ trì hoàn thiện các tệp `m4_dynamics/recurrence.py` (Task 17), `m4_dynamics/rolling_horizon.py` (Task 18), `m4_dynamics/simulate.py` (Task 19), `m4_dynamics/perturbation.py` (Task 20), `tools/check_m4.py`, cùng khung ứng dụng Module 5 (`app/app.py`, `app/views/plan.py`, `app/views/dynamics.py`, cập nhật `run_all.py`).
+  - **Chừa lại 2 task của Kiệt (`2551907`) để Kiệt tự code và mở PR:** Task 16 (`m4_dynamics/calibrate.py`) và Task 24 (`app/views/temporal.py`). Trong thời gian chờ Kiệt nộp, `m4_dynamics/recurrence.py` dùng hàm fallback `load_or_fit_params()` và `app/app.py` dùng hàm fallback `_render_temporal_fallback()` để toàn bộ pipeline chạy trơn tru 100%.
+- **Vuong mac:**
+  - Cần Kiệt (`2551907`) hoàn thành `m4_dynamics/calibrate.py` trước hạn khóa tag `m4` (`22/11/2026`) và `app/views/temporal.py` trước hạn `m5` (`29/11/2026`).
+- **Phan viec tuan toi (week-11: 16/11 - 22/11/2026 — Khóa sổ M4):**
+  - **Kiệt (`2551907`):** Nộp `m4_dynamics/calibrate.py` (Task 16, hạn nội bộ **18/11/2026**) xuất `m4_dynamics/out/params.json` và bắt đầu `app/views/temporal.py` (Task 24, hạn nội bộ **25/11/2026**).
+  - **Phúc (`2551920`) & Long (`2551909`):** Review PR của Kiệt, kiểm tra chéo các con số trong `m4_dynamics/out/*.json` để đưa vào bản thảo báo cáo chương M4.
+  - **Phú (`2551918`) & Khôi (`2551905`):** Chạy `tools/check_m4.py` và `python run_all.py --seed 43003334` sau khi merge PR của Kiệt, gắn và push tag `week-11` + `m4` đúng hạn **22/11/2026**.
+
