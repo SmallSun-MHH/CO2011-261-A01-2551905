@@ -41,7 +41,7 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 
 | Req | File | Primary owner | Reviewer | Ghi chu |
 |---|---|---|---|---|
-| 4.1 | `m4_dynamics/calibrate.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 16 (chừa lại để Kiệt nộp PR)**; trong khi chờ, `recurrence.py` cung cấp fallback `load_or_fit_params()` |
+| 4.1 | `m4_dynamics/calibrate.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 16**: Kiet nop commit `3dd64ad` (16/11), hieu chinh $(a,b,r)$ tu du lieu that xuat `data/processed/m4_params.json`; Khoi kiem thu tich hop `run_all.py` & `check_m4.py` (22/11) |
 | 4.1–4.2 | `m4_dynamics/recurrence.py` | 2551905 Tran Anh Khoi, 2551920 Nguyen Quang Phuc | 2551905 Tran Anh Khoi | Task 17: Phương trình sai phân $F_{i,n+1}$, điểm bất động $F^* = 7/6$, chứng minh Lyapunov & bác bỏ bộ tích lũy trị riêng 1 |
 | 4.3 | `m4_dynamics/rolling_horizon.py` | 2551905 Tran Anh Khoi, 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Task 18: Vòng lặp đóng $N=60$ kỳ gọi `solve_week(params, lambdas)` đạt spread = 0, Jain = 1.0000 |
 | 4.3 | `m4_dynamics/simulate.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu | 2551905 Tran Anh Khoi | Task 19 (Autograder 5đ): Hội tụ $|F_{i,60}-F^*| = 3.30\times 10^{-7} < 10^{-3}$, xuất 2 biểu đồ |
@@ -57,7 +57,7 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 | 5.2 | `app/views/temporal.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 24 (chừa lại để Kiệt nộp PR)**; `app/app.py` tích hợp sẵn `_render_temporal_fallback()` |
 | 5.2 | `app/views/dynamics.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu, 2551920 Nguyen Quang Phuc | 2551905 Tran Anh Khoi | Task 25: Tab 3 (Quỹ đạo hội tụ $F^*$, công bằng Jain/Gini, nhiễu loạn, Xích Markov & simulator tương tác) |
 
-Cot Reviewer ghi nguoi DA THUC SU doc code, chay kiem chung va duyet (Khoi `2551905` ra soat toan bo M2–M3 ngay 08/11/2026 va M4–M5 ngay 15/11/2026).
+Cot Reviewer ghi nguoi DA THUC SU doc code, chay kiem chung va duyet (Khoi `2551905` ra soat toan bo M2–M3 ngay 08/11/2026, M4–M5 ngay 15/11/2026 va ra soat khoa so M4/dong bo M5 ngay 22/11/2026).
 
 ## Ghi chu ve danh tinh git
 

@@ -67,10 +67,10 @@ def main() -> int:
 
     calib_py = m4_dir / "calibrate.py"
     if calib_py.exists() and calib_py.stat().st_size > 100:
-        ok("Có tệp m4_dynamics/calibrate.py (Task 16 — Lê Tuấn Kiệt 2551907)")
+        ok("Có tệp m4_dynamics/calibrate.py (Task 16 — Trần Tuấn Kiệt 2551907)")
     else:
         warn(
-            "Chưa có m4_dynamics/calibrate.py (Task 16 — Chừa lại cho Lê Tuấn Kiệt 2551907); "
+            "Chưa có m4_dynamics/calibrate.py (Task 16 — Chừa lại cho Trần Tuấn Kiệt 2551907); "
             "hệ thống đang dùng cơ chế fallback chuẩn load_or_fit_params() trong recurrence.py."
         )
 

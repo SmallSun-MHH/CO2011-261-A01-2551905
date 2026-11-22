@@ -135,3 +135,21 @@
   - **Phúc (`2551920`) & Long (`2551909`):** Review PR của Kiệt, kiểm tra chéo các con số trong `m4_dynamics/out/*.json` để đưa vào bản thảo báo cáo chương M4.
   - **Phú (`2551918`) & Khôi (`2551905`):** Chạy `tools/check_m4.py` và `python run_all.py --seed 43003334` sau khi merge PR của Kiệt, gắn và push tag `week-11` + `m4` đúng hạn **22/11/2026**.
 
+## 2026-11-22 (week-11: 2026-11-16 - 2026-11-22)
+
+**Bang chung git co that trong tuan** (sinh tu `git log`, khong sua):
+  - `3dd64ad` 2026-11-16 · 2551907 Tran Tuan Kiet · m4: Hieu chinh tham so tu du lieu (Task 16)
+
+**Tag tuan:** `week-11` va `m4` (chot moc Module 4 ngay 22/11/2026).
+
+- **Ghi nhan rà soát & khóa sổ M4 (2551905 Trần Anh Khôi):**
+  - Đã kiểm thử toàn tuyến `run_all.py --seed 43003334 --stage m4` và `--stage m5` sau khi gộp `m4_dynamics/calibrate.py` của Kiệt (`3dd64ad`): `tools/check_m4.py` đạt **18 ĐẠT · 0 CẢNH BÁO · 0 HỎNG** (sai số hội tụ `max_i |F_{i,60} - F*| = 2.33e-06 < 1e-3`).
+  - Phát hiện và sửa lỗi ghi nhầm họ tên thành viên trong tài liệu/docstring M4 & M5, đồng thời đồng bộ lại 100% số liệu động trong `app/app.py` (Tab 2 M3 155 trạng thái, 73×27 ngày, 4 luật R1–R4 thật) và `app/views/plan.py` (đọc đúng khóa `unsat_core.json`, `solution.json` `Obj=3.99`, sửa hiển thị `prefer_campus=None` cho nhóm `balanced`), và hoàn thiện `app/README.md`.
+- **Vướng mắc cần nhóm phối hợp ngay:**
+  - **Phú (`2551918`)** và **Long (`2551909`)** hiện chưa có commit riêng trong thư mục `m4_dynamics/` — cần mỗi người bổ sung ít nhất 1 commit thực chất vào `m4_dynamics/` để đảm bảo tiêu chí `po.all_module_contribution` (5/5 thành viên đóng góp trên cả 4 module).
+  - **Kiệt (`2551907`)** hoàn thành `app/views/temporal.py` (Task 24) trước hạn `25/11/2026` để khóa mốc `m5` ngày `29/11/2026`.
+- **Phân việc tuần tới (week-12: 23/11 – 29/11/2026 — Khóa mốc M5 & Khởi động Báo cáo):**
+  - **Kiệt (`2551907`):** Nộp `app/views/temporal.py` (Task 24) và xác nhận mức sử dụng AI trong `README.md`.
+  - **Phú (`2551918`) & Long (`2551909`):** Bổ sung đóng góp kiểm chứng/tài liệu vào `m4_dynamics/` và khởi tạo khung báo cáo `report/`.
+  - **Khôi (`2551905`) & Phúc (`2551920`):** Kiểm thử giao diện `streamlit run app/app.py` trên trình duyệt, chốt mốc `m5` + `week-12` đúng hạn **29/11/2026**.
+

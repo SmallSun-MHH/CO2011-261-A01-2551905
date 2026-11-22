@@ -1,6 +1,6 @@
 """Module 4 — Mô phỏng quỹ đạo mệt mỏi N kỳ và kiểm chứng hội tụ về F* (Task 19).
 
-Tác giả Chính: Lê Sỹ Phú (2551918) · Phối hợp: Trần Anh Khôi (2551905)
+Tác giả Chính: Nguyễn Phong Phú (2551918) · Phối hợp: Trần Anh Khôi (2551905)
 
 Mô tả:
     Thực thi mô phỏng đa kỳ (N = 60 kỳ thi, tương ứng 10 chu kỳ xoay vòng cơ bản W = 6),

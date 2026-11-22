@@ -1,6 +1,6 @@
 """Tab 1 (M5) — Lịch Phân Công & Chẩn Đoán Xung Đột (M1 SAT/MUS + M2 CP-SAT vs Baseline).
 
-Tác giả Chính: Nguyễn Hoàng Long (2551909) · Phối hợp: Trần Anh Khôi (2551905)
+Tác giả Chính: Trần Bùi Bảo Long (2551909) · Phối hợp: Trần Anh Khôi (2551905)
 """
 
 from __future__ import annotations
@@ -25,21 +25,19 @@ def _load_json_safe(path: Path) -> dict[str, Any]:
 
 
 def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
-    """Hiển thị Tab 1: Kết quả M1 (SAT/UNSAT/MUS) và M2 (CP-SAT 2 pha vs Tham lam)."""
+    """Hiển thị Tab 1: Kết quả M1 (SAT/UNSAT/MUS) và M2 (CP-SAT 2 pha vs Lịch gốc)."""
     st.subheader("1. Tổng quan Khả thi Logic (M1) & Tối ưu hóa Lịch trực (M2)")
 
     inst_path = repo_root / "data" / "instance_slice.json"
-    m1_sat_path = repo_root / "m1_logic" / "out" / "sat_result.json"
     m1_mus_path = repo_root / "m1_logic" / "out" / "unsat_core.json"
     m2_sol_path = repo_root / "m2_ilp" / "out" / "solution.json"
 
     instance = _load_json_safe(inst_path)
-    m1_sat = _load_json_safe(m1_sat_path)
     m1_mus = _load_json_safe(m1_mus_path)
     m2_sol = _load_json_safe(m2_sol_path)
 
     if not instance:
-        st.error("Chưa tìm thấy `data/instance_slice.json`. Hãy chạy `python run_all.py` trước.")
+        st.error("Chưa tìm thấy `data/instance_slice.json`. Hãy chạy `python run_all.py --seed 43003334` trước.")
         return
 
     m2_data = run_preprocess(instance, seed_int=seed_int)
@@ -51,16 +49,17 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
 
     # ---- Hàng KPI tổng hợp M1 & M2 ----
     c1, c2, c3, c4 = st.columns(4)
-    sat_status = m1_sat.get("status", "SAT")
-    n_vars = m1_sat.get("num_vars", 108)
-    n_clauses = m1_sat.get("num_clauses", 580)
+    sat_ok = m1_mus.get("lat_nguyen_ban_sat", True)
+    mus_list = m1_mus.get("unsat_core", [])
+    n_star = m1_mus.get("phep_siet", {}).get("nguong_N_sao", 14)
+    n_busy = m1_mus.get("busy_suy_ra_tu_baseline", len(instance.get("busy", [])))
     c1.metric(
-        "Trạng thái M1 (CNF/SAT)",
-        f"{sat_status} (5/5 Cứng)",
-        f"{n_vars} biến · {n_clauses} mệnh đề",
+        "Trạng thái M1 (SAT & MUS)",
+        f"{'SAT' if sat_ok else 'UNSAT'} (5/5 Cứng)",
+        f"Busy={n_busy} cặp · MUS={len(mus_list)} nhóm (N*={n_star}/18)",
     )
-    base_obj = float(base_metrics.get("phat_co_trong_so", 15.83))
-    sol_obj = float(m2_sol.get("objective", 8.53))
+    base_obj = float(base_metrics.get("phat_co_trong_so", 7.74))
+    sol_obj = float(m2_sol.get("objective", 3.99))
     c2.metric(
         "Mục tiêu Pha 2 (CP-SAT)",
         f"{sol_obj:.2f}",
@@ -75,7 +74,7 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
     s_info = m2_sol.get("soft", {})
     c4.metric(
         "Vi phạm Ràng buộc Mềm",
-        f"S1={s_info.get('vi_pham_S1_loc', 5)} · S2={s_info.get('vi_pham_S2_load', 0)}",
+        f"S1={s_info.get('vi_pham_S1_loc', 0)} · S2={s_info.get('vi_pham_S2_load', 0)}",
         "w_loc=0.71, w_load=1.62, w_fair=1.33",
     )
 
@@ -89,7 +88,7 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
             "Chọn giám thị vắng mặt đột xuất (khóa Busy(i, j) = True trên mọi ca trong ngày):",
             options=base_params["I"],
             default=[],
-            help="Nếu khóa từ 8 giám thị trở lên (chỉ còn <= 10 người rảnh, tối đa 20 ca < 21 ca yêu cầu), bài toán sẽ chuyển sang UNSAT/INFEASIBLE.",
+            help="Khung 13g00 cần tổng cộng 15 giám thị ở 2 ca trùng giờ (CS1: 1, CS2: 14). Khi khóa từ 4 giám thị trở lên (chỉ còn <= 14 người rảnh), bài toán lập tức chuyển sang INFEASIBLE.",
         )
     with col_cfg2:
         custom_max_load = st.slider(
@@ -114,9 +113,9 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
         st.error(
             f"**Kịch bản VÔ NGHIỆM ({live_sol.get('status')}):** "
             f"Khi {len(unavailable_staff)} giám thị vắng mặt ({', '.join(unavailable_staff)}), "
-            f"5 ràng buộc cứng (H1–H5) mâu thuẫn! Tổng nhu cầu 6 ca thi là **21 lượt giám thị**, "
-            f"nhưng số giám thị khả dụng còn lại ({18 - len(unavailable_staff)} người) bị giới hạn bởi "
-            f"cặp ca trùng giờ (H1: mỗi người chỉ nhận tối đa 2 ca không trùng giờ trong ngày)."
+            f"5 ràng buộc cứng (H1–H5) mâu thuẫn! Hai ca trùng giờ lúc 13g00 "
+            f"(`20260528_3@Cơ sở 1` cần 1 và `20260528_3@Cơ sở 2` cần 14) đòi hỏi ít nhất **15 giám thị khác nhau**, "
+            f"trong khi số giám thị khả dụng còn lại ({18 - len(unavailable_staff)} người) hoặc bị kẹt lịch bận H2 không đáp ứng đủ."
         )
     else:
         if unavailable_staff or custom_max_load != 2:
@@ -133,17 +132,18 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
         assigned_set = {(i, j) for i, j in live_sol["assignment"]}
         rows = []
         for i_id in sim_params["I"]:
-            pref_c = sim_params["preferences"].get(i_id, {}).get("prefer_campus", "Cơ sở 1")
+            pref_c = sim_params["preferences"].get(i_id, {}).get("prefer_campus")
+            pref_label = pref_c if pref_c else "Linh hoạt (cả 2 CS)"
             row_data: dict[str, Any] = {
                 "Giám thị": i_id,
-                "Nguyện vọng": pref_c,
+                "Nguyện vọng": pref_label,
                 "Trạng thái": "Nghỉ đột xuất" if i_id in unavailable_staff else "Sẵn sàng",
             }
             for j_id in sim_params["J"]:
                 campus_j = sim_params["campus"].get(j_id, "")
                 is_busy = sim_params["busy"].get(f"{i_id}|{j_id}", False)
                 if (i_id, j_id) in assigned_set:
-                    match_flag = "✓" if campus_j == pref_c else "✓ (khác CS)"
+                    match_flag = "✓" if (pref_c is None or campus_j == pref_c) else "✓ (khác CS)"
                     row_data[f"{j_id} ({campus_j})"] = match_flag
                 elif is_busy:
                     row_data[f"{j_id} ({campus_j})"] = "Bận (H2)"
@@ -203,13 +203,26 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
     # ---- Chẩn đoán Lõi Mâu thuẫn Tối tiểu (M1 MUS) ----
     with st.expander("🔍 Chẩn đoán Lõi Mâu thuẫn Tối tiểu (M1 MUS — Minimal Unsatisfiable Subset)", expanded=False):
         if m1_mus:
+            siet = m1_mus.get("phep_siet", {})
+            mus_core = m1_mus.get("unsat_core", [])
+            ho_rb = m1_mus.get("ho_rang_buoc", {})
+            kc_tt = m1_mus.get("kiem_chung_toi_thieu", [])
+            dat_tt = all(item.get("dat", False) for item in kc_tt) if kc_tt else False
             st.markdown(
-                f"- **Kịch bản mâu thuẫn kiểm thử:** `{m1_mus.get('scenario_name', 'tightened_unsat')}`\n"
-                f"- **Kích thước lõi MUS:** `{m1_mus.get('mus_size', len(m1_mus.get('mus_groups', [])))}` nhóm ràng buộc tối tiểu "
-                f"(chỉ cần nới lỏng **bất kỳ 1 mệnh đề nào** trong MUS là hệ thống lập tức khả thi `SAT`).\n"
-                f"- **Giải thích tự động:** {m1_mus.get('explanation', 'Xung đột giữa yêu cầu đủ sĩ số ca thi và giới hạn không trùng ca trên tập giám thị khả dụng.')}"
+                f"- **Phép siết bất khả thỏa (D3):** thu hẹp tập giám thị xuống ngưỡng `N* = {siet.get('nguong_N_sao', 14)}/{siet.get('tong_giam_thi', 18)}` người.\n"
+                f"- **Kích thước lõi MUS:** `{len(mus_core)}` nhóm ràng buộc tối tiểu "
+                f"(họ: `{', '.join(sorted(set(ho_rb.values())))}`).\n"
+                f"- **Chứng minh tính tối thiểu (Deletion-based MUS):** `{'ĐẠT' if dat_tt else 'CHƯA ĐẠT'}` "
+                f"({len(kc_tt)} phép thử — bỏ bất kỳ mệnh đề nào trong lõi đều trở lại `SAT`)."
             )
-            if "mus_groups" in m1_mus:
-                st.json(m1_mus["mus_groups"])
+            if mus_core:
+                df_mus = pd.DataFrame([
+                    {"Nhóm ràng buộc trong MUS": g, "Họ ràng buộc": ho_rb.get(g, "—")}
+                    for g in mus_core
+                ])
+                st.dataframe(df_mus, use_container_width=True, hide_index=True)
+            if kc_tt:
+                st.caption("Kết quả kiểm chứng xóa từng phần tử khỏi MUS:")
+                st.dataframe(pd.DataFrame(kc_tt), use_container_width=True, hide_index=True)
         else:
             st.info("Chưa có dữ liệu `m1_logic/out/unsat_core.json`.")

@@ -1,6 +1,6 @@
 """Module 4 — Vòng lặp đóng Rolling-Horizon kết nối M4-A với M2 ILP (Task 18).
 
-Tác giả Chính: Nguyễn Hoàng Long (2551909) · Phối hợp: Trần Anh Khôi (2551905)
+Tác giả Chính: Trần Bùi Bảo Long (2551909) · Phối hợp: Trần Anh Khôi (2551905)
 
 Mô tả:
     Thực thi vòng lặp đóng (closed-loop rolling-horizon) qua N kỳ thi liên tiếp:

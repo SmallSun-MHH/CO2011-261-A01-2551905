@@ -1,6 +1,6 @@
 """Tab 3 (M5) — Động lực học Mệt mỏi, Công bằng Dài hạn & Nhiễu loạn (M4-A/B/C).
 
-Tác giả Chính: Lê Sỹ Phú (2551918) & Huỳnh Trọng Phúc (2551920) · Phối hợp: Trần Anh Khôi (2551905)
+Tác giả Chính: Nguyễn Phong Phú (2551918) & Nguyễn Quang Phúc (2551920) · Phối hợp: Trần Anh Khôi (2551905)
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ def render_dynamics_tab(repo_root: Path) -> None:
     with sub_tabs[0]:
         fig1 = m4_out / "fatigue_trajectories.png"
         if fig1.exists():
-            st.image(str(fig1), use_container_width=True)
+            st.image(str(fig1), use_column_width=True)
         st.markdown(
             f"**Phân tích toán học:** Phương trình sai phân mệt mỏi "
             f"$F_{{i,n+1}} = a F_{{i,n}} + b \\hat{{\\ell}}_{{i,n}} - r \\hat{{\\rho}}_{{i,n}}$ "
@@ -98,7 +98,7 @@ def render_dynamics_tab(repo_root: Path) -> None:
     with sub_tabs[1]:
         fig2 = m4_out / "fairness_convergence.png"
         if fig2.exists():
-            st.image(str(fig2), use_container_width=True)
+            st.image(str(fig2), use_column_width=True)
         col_f1, col_f2 = st.columns(2)
         with col_f1:
             st.markdown("##### Bảng Đối sánh Định lượng sau $N = 60$ kỳ")
@@ -145,7 +145,7 @@ def render_dynamics_tab(repo_root: Path) -> None:
     with sub_tabs[2]:
         fig3 = m4_out / "perturbation_recovery.png"
         if fig3.exists():
-            st.image(str(fig3), use_container_width=True)
+            st.image(str(fig3), use_column_width=True)
         sens_list = pert_data.get("gamma_sensitivity", [])
         if sens_list:
             st.markdown("##### Bảng Phân tích Độ nhạy theo Hệ số Khuếch đại Phản hồi $\\gamma$ (36 kỳ = 6 chu kỳ $W=6$)")
