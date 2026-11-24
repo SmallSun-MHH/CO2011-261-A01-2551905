@@ -42,6 +42,17 @@ def render_dynamics_tab(repo_root: Path) -> None:
         rh_data = _load_json_safe(m4_out / "rolling_horizon.json")
         rec_data = _load_json_safe(m4_out / "recurrence_analysis.json")
 
+    # Tuần 12: không hiển thị số mặc định viết tay khi thiếu kết quả thật.
+    thieu = [ten for ten, d in (("recurrence_analysis.json", rec_data), ("rolling_horizon.json", rh_data),
+                                ("simulation.json", sim_data), ("perturbation.json", pert_data)) if not d]
+    if thieu:
+        st.error(
+            "Thiếu kết quả M4: " + ", ".join(f"`m4_dynamics/out/{t}`" for t in thieu)
+            + ". Chạy `python run_all.py --stage m4` rồi tải lại trang — tab này không hiển thị số ước đoán."
+        )
+        return
+    ident = _load_json_safe(m4_out / "identify.json")
+
     eq_v = sim_data.get("equilibrium_verification", {})
     cmp_s = rh_data.get("comparison_summary", {})
     pe = pert_data.get("perturbation_experiment", {})
@@ -88,11 +99,23 @@ def render_dynamics_tab(repo_root: Path) -> None:
         st.markdown(
             f"**Phân tích toán học:** Phương trình sai phân mệt mỏi "
             f"$F_{{i,n+1}} = a F_{{i,n}} + b \\hat{{\\ell}}_{{i,n}} - r \\hat{{\\rho}}_{{i,n}}$ "
-            f"có hệ số nhớ $a = {cal.get('a', 0.760528):.6f} \\in (0, 1)$, nên ánh xạ trạng thái "
+            f"có hệ số nhớ $a = {cal.get('a', float('nan')):.6f} \\in (0, 1)$, nên ánh xạ trạng thái "
             f"là **ánh xạ co toàn cục** với bán kính phổ Jacobi $|f'(F^*)| = a < 1$. "
             f"Khi đóng vòng phản hồi bằng $\\lambda_i(F_{{i,n}})$, bộ giải CP-SAT xoay vòng đều "
             f"3 suất ca kép qua tất cả 18 giám thị theo chu kỳ cơ bản $W = \\frac{{18}}{{\\gcd(18, 21)}} = 6$ kỳ, "
             f"ép toàn bộ 18 quỹ đạo hội tụ về cùng $F^* = \\frac{{7}}{{6}} \\approx 1.1667$."
+        )
+        st.caption(
+            "Giới hạn (identify.py): $F^* = \\bar\\ell$ là ràng buộc chuẩn hoá dùng để giải $b$, đúng với mọi $(a, r)$; "
+            "$a$ là quy ước (tỷ lệ ngày nghỉ), không phải ước lượng"
+            + (" — vùng tin cậy 95% của $a$ trên dữ liệu thật: "
+               + " ∪ ".join(f"[{u}; {v}]" for u, v in ident["xac_dinh_a"]["vung_tin_cay_95"])
+               + (", giá trị đang dùng nằm trong vùng này" if ident["xac_dinh_a"]["a_calibrate_trong_vung_95"]
+                  else ", giá trị đang dùng nằm NGOÀI vùng này")
+               if ident.get("xac_dinh_a", {}).get("vung_tin_cay_95") else "")
+            + ". Kết luận định tính (5/5 ràng buộc cứng, spread tải cuối = 0) đứng vững với mọi $a$ đã thử; "
+            "thời gian hồi phục thì phụ thuộc $a$. Hội tụ về $F^*$ ở đây là của mệt mỏi trung bình chu kỳ $F_{eff}$; "
+            "mệt mỏi thật $F_{raw}$ dao động tuần hoàn chu kỳ 6 quanh $F^*$ (xem fairness_ablation.py)."
         )
 
     with sub_tabs[1]:
@@ -169,15 +192,16 @@ def render_dynamics_tab(repo_root: Path) -> None:
                 states = mc.get("states", ["Rest (-)", "Day (M/A)", "Night (N)"])
                 p_mat = mc.get("transition_matrix_P", [])
                 df_p = pd.DataFrame(p_mat, index=states, columns=states)
-                st.write("Ma trận xác suất chuyển trạng thái thực nghiệm $P$ (từ 1,944 bước chuyển ngày liên tiếp):")
+                st.write(f"Ma trận xác suất chuyển trạng thái thực nghiệm $P$ (từ {mc.get('total_transitions_observed')} bước chuyển ngày liên tiếp):")
                 st.dataframe(df_p, use_container_width=True)
                 pi_dict = mc.get("stationary_distribution_pi", {})
                 st.markdown(
                     f"- **Phân phối dừng $\\pi$:** `Rest = {pi_dict.get('Rest (-)', 0.7520):.4f}`, "
                     f"`Day (M/A) = {pi_dict.get('Day (M/A)', 0.1687):.4f}`, "
                     f"`Night (N) = {pi_dict.get('Night (N)', 0.0792):.4f}`\n"
-                    f"- **Đối chiếu với hệ số nhớ $a$ của M4-A:** $\\pi_{{\\mathrm{{Rest}}}} = {pi_dict.get('Rest (-)', 0.7520):.4f} \\approx a = 0.7605$ "
-                    f"(sai lệch tuyệt đối chỉ `{mc.get('consistency_with_m4_decay_a', {}).get('abs_difference', 0.0085):.4f}`).\n"
+                    f"- **Liên hệ với $a$ của M4-A:** $\\pi_{{\\mathrm{{Rest}}}} = {pi_dict.get('Rest (-)', float('nan')):.4f}$, "
+                    f"$a = {mc.get('consistency_with_m4_decay_a', {}).get('calibrated_decay_a', float('nan')):.4f}$ — gần nhau vì "
+                    f"$a$ được định nghĩa là tỷ lệ ngày nghỉ trên chính các chuỗi này (không phải kiểm chứng độc lập).\n"
                     f"- **Tốc độ trộn (Mixing Time):** SLEM $|\\lambda_2| = {mc.get('SLEM_abs_lambda_2', 0.1607):.4f} < 1$ "
                     f"· hội tụ ngưỡng $10^{{-6}}$ chỉ sau **$k = {mc.get('mixing_time_tv_1e_6', 8)}$ bước**."
                 )

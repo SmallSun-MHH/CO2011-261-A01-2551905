@@ -43,6 +43,11 @@ if str(REPO) not in sys.path:
 def _fit_from_real_data(repo_root: Path = REPO) -> dict[str, Any]:
     """Hiệu chỉnh (a, b, r) trực tiếp từ dữ liệu thật của Khoa (fallback chuẩn cho Task 16).
 
+    LƯU Ý (tuần 12): a ở đây là QUY ƯỚC (tỷ lệ ngày nghỉ), không phải ước lượng —
+    profile likelihood trong identify.py: a = tỷ lệ ngày nghỉ nằm ngoài vùng tin cậy 95%.
+    b được giải từ ràng buộc chuẩn hoá F* = l_bar nên "F* khớp l_bar" đúng với mọi
+    (a, r) và không phải bằng chứng mô hình khớp dữ liệu.
+
     Phương pháp hiệu chỉnh (Data-driven calibration — §1.2 & §2 Module 4):
       1. Từ lát dữ liệu `data/instance_slice.json` (|I| = 18 giám thị, |J| = 6 ca,
          tổng sức chứa C_tot = 21 ca/kỳ, ngưỡng mệt mỏi MaxLoad = 2 ca/kỳ):
@@ -402,13 +407,15 @@ def kiem_bo_de(params, seed, luoi=(0, 0.5, 1, 2, 4, 8)):
     print(f"    Tổng tải mỗi lần giải luôn bằng {tong0}.")
 
 
-def vong_kin(params, seed, a=0.8, b=1.0, r_rho=0.3, mu=0.5, n_tuan=30):
+def vong_kin(params, seed, a, b, r, max_load_ref=2.0, mu=0.5, n_tuan=30):
+    """Vòng kín trên ILP thật với ĐÚNG phương trình và tham số của calibrate.py
+    (trước tuần 12 hàm này dùng a=0.8, b=1.0, r·ρ=0.3 — không khớp mô hình báo cáo)."""
     I = params["I"]
     F = {i: 0.0 for i in I}
     tong0 = None
     m0 = 0.0
-    print(f"\n[2] Vòng kín 30 tuần trên ILP thật. Tham số MINH HỌA: "
-          f"a={a}, b={b}, r·ρ={r_rho}, λᵢ = {mu}·Fᵢ")
+    print(f"\n[2] Vòng kín {n_tuan} tuần trên ILP thật, tham số từ m4_params.json: "
+          f"a={a:.6f}, b={b:.6f}, r={r:.6f}, rest = {max_load_ref:g} − tải, λᵢ = {mu}·Fᵢ")
     print(f"    {'tuần':>4} {'F trung bình':>13} {'công thức đóng':>15} {'độ lệch max-min':>16} {'tải max':>8}")
     for n in range(n_tuan + 1):
         kq = giai(params, seed, {i: mu * F[i] for i in I})
@@ -417,21 +424,22 @@ def vong_kin(params, seed, a=0.8, b=1.0, r_rho=0.3, mu=0.5, n_tuan=30):
         tong0 = T if tong0 is None else tong0
         assert T == tong0
         trung_binh = sum(F.values()) / len(I)
-        f_sao = (b * tong0 / len(I) - r_rho) / (1 - a)
+        l_tb = tong0 / len(I)
+        f_sao = (b * l_tb - r * (max_load_ref - l_tb)) / (1 - a)
         dong = f_sao + a ** n * (m0 - f_sao)
         assert abs(trung_binh - dong) < 1e-9, (n, trung_binh, dong)
         if n in (0, 1, 2, 3, 5, 10, 20, 30):
             print(f"    {n:4d} {trung_binh:13.6f} {dong:15.6f} {max(F.values()) - min(F.values()):16.4f} {max(tai.values()):8d}")
-        F = {i: a * F[i] + b * tai[i] - r_rho for i in I}
-    print(f"    F̄* = (b·T/|I| − r·ρ)/(1−a) = {f_sao:.6f}; trung bình khớp công thức đóng đến 1e-9 ở mọi tuần.")
-    lam = a
-    loai = "ON DINH tiệm cận" if abs(lam) < 1 else ("BIEN on dinh" if abs(lam) == 1 else "KHONG ON DINH")
-    print(f"    Trị riêng λ = a = {lam:.4f}\n    Phân loại: {loai}")
+        F = step_fatigue_vector(F, tai, a, b, r, max_load_ref)
+    print(f"    F̄* = (b·l̄ − r·ρ̄)/(1−a) = {f_sao:.6f} với l̄ = T/|I| = {l_tb:.6f}; "
+          f"trung bình khớp công thức đóng đến 1e-9 ở mọi tuần.")
+    loai = "ON DINH tiệm cận" if abs(a) < 1 else ("BIEN on dinh" if abs(a) == 1 else "KHONG ON DINH")
+    print(f"    Trị riêng λ = a = {a:.4f}\n    Phân loại: {loai}")
 
 
-def quet_mu(params, seed, a=0.8, b=1.0, r_rho=0.3, n_tuan=60):
+def quet_mu(params, seed, a, b, r, max_load_ref=2.0, n_tuan=60):
     I = params["I"]
-    print(f"\n[3] Quét độ dốc μ của λᵢ = μ·Fᵢ trên ILP thật ({n_tuan} tuần):")
+    print(f"\n[3] Quét độ dốc μ của λᵢ = μ·Fᵢ trên ILP thật ({n_tuan} tuần, cùng tham số m4_params.json):")
     print(f"    {'μ':>5} {'max−min F':>10} {'F lớn nhất':>11} {'tỉ lệ (người, tuần) đổi tải':>28}")
     for mu in (0, 0.5, 2, 8):
         F = {i: 0.0 for i in I}
@@ -439,7 +447,7 @@ def quet_mu(params, seed, a=0.8, b=1.0, r_rho=0.3, n_tuan=60):
         for _ in range(n_tuan):
             tai = giai(params, seed, {i: mu * F[i] for i in I})["load"]
             lich_su.append(tai)
-            F = {i: a * F[i] + b * tai[i] - r_rho for i in I}
+            F = step_fatigue_vector(F, tai, a, b, r, max_load_ref)
         doi = sum(lich_su[k][i] != lich_su[k - 1][i] for i in I for k in range(n_tuan - 10, n_tuan)) / (10 * len(I))
         print(f"    {mu:5} {max(F.values()) - min(F.values()):10.4f} {max(F.values()):11.4f} {doi:28.2f}")
 
@@ -477,9 +485,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.ilp_demo:
         params, seed = nap_tham_so()
         kiem_bo_de(params, seed)
-        vong_kin(params, seed)
-        quet_mu(params, seed)
-        so_sanh_bo_tich_luy()
+        M = float(p.get("max_load_ref", 2.0))
+        vong_kin(params, seed, p["a"], p["b"], p["r"], M)
+        quet_mu(params, seed, p["a"], p["b"], p["r"], M)
+        so_sanh_bo_tich_luy(a=p["a"])
     return 0
 
 

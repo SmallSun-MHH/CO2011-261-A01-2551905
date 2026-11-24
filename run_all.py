@@ -197,6 +197,8 @@ def main():
             ([sys.executable, "m4_dynamics/rolling_horizon.py"], "rolling_horizon.py (Task 18)"),
             ([sys.executable, "m4_dynamics/simulate.py"], "simulate.py (Task 19 — Autograder)"),
             ([sys.executable, "m4_dynamics/perturbation.py"], "perturbation.py (Task 20)"),
+            ([sys.executable, "m4_dynamics/identify.py"], "identify.py (tuan 12: gioi han nhan dang a, b, r)"),
+            ([sys.executable, "m4_dynamics/fairness_ablation.py"], "fairness_ablation.py (tuan 12: luan diem cong bang)"),
         ):
             if subprocess.run(lenh, cwd=repo_root).returncode != 0:
                 sys.exit(f"[run_all] LOI: m4_dynamics/{nhan} that bai")
@@ -209,6 +211,7 @@ def main():
         print(f"  MODULE 5 -- Interactive Streamlit App Verification  (seed={a.seed})")
         print(f"{'='*60}")
         import py_compile
+        import subprocess
         for rel_py in ("app/app.py", "app/views/plan.py", "app/views/dynamics.py"):
             p_py = repo_root / rel_py
             if not p_py.exists():
@@ -220,6 +223,20 @@ def main():
             print("[m5_app] OK - Da kiem tra cu phap app/app.py + 3 views (plan, temporal, dynamics)")
         else:
             print("[m5_app] OK - Da kiem tra cu phap app/app.py + plan.py + dynamics.py (Tab 2 dung fallback cho Task 24 temporal.py)")
+        # Tuan 12: kiem tra import DUNG nhu khi `streamlit run app/app.py`: sys.path = [ROOT, app/, ...]
+        # (streamlit chen app/, app.py chen ROOT len dau). Thieu app/__init__.py thi app/ chi la
+        # namespace package, thua module app/app.py -> app sap ngay khi mo.
+        chk = subprocess.run(
+            [sys.executable, "-c",
+             "import sys; sys.path[:0] = [sys.argv[1], sys.argv[2]]; "
+             "import app.views.plan, app.views.dynamics; print('import OK')",
+             str(repo_root), str(repo_root / "app")],
+            cwd=repo_root, capture_output=True, text=True,
+        ) if (repo_root / "app" / "__init__.py").exists() else None
+        if chk is None or chk.returncode != 0:
+            sys.exit("[run_all] LOI: goi app/ khong import duoc nhu khi chay streamlit "
+                     "(thieu app/__init__.py?)\n" + ("" if chk is None else chk.stderr[-800:]))
+        print("[m5_app] OK - import app.views.* thanh cong theo dung thu tu sys.path cua streamlit")
         print("[m5_app] Khoi chay giao dien: streamlit run app/app.py")
 
     print(f"[run_all] seed={a.seed} stage={a.stage}: done.")

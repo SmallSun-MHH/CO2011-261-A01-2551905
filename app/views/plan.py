@@ -40,6 +40,11 @@ def render_plan_tab(repo_root: Path, seed_int: int = 43003334) -> None:
         st.error("Chưa tìm thấy `data/instance_slice.json`. Hãy chạy `python run_all.py --seed 43003334` trước.")
         return
 
+    if not m1_mus:
+        # Tuần 12: không hiển thị "SAT", N*=14… mặc định khi chưa có kết quả M1 thật.
+        st.error("Chưa có `m1_logic/out/unsat_core.json`. Chạy `python run_all.py --stage m1` rồi tải lại trang.")
+        return
+
     m2_data = run_preprocess(instance, seed_int=seed_int)
     base_params = build_params(instance, m2_data)
     if not m2_sol:

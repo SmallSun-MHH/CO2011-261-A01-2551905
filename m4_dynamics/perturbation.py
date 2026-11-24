@@ -26,8 +26,10 @@ Mô tả:
       4. Kiểm chứng chéo Xích Markov 3 trạng thái {"Rest (-)", "Day (M/A)", "Night (N)"}
          trên chuỗi lịch trực thực tế m3_real_strings.json: tính phân phối dừng pi,
          trị riêng lớn thứ hai (SLEM |lambda_2|) và thời gian trộn tổng biến thiên
-         (Total Variation Mixing Time), đối chiếu xác suất nghỉ dừng pi_Rest với hệ số
-         suy giảm mệt mỏi a = 0.760528.
+         (Total Variation Mixing Time). Lưu ý: pi_Rest của xích ước lượng từ chính các
+         chuỗi này gần như bằng tỷ lệ ngày nghỉ, mà calibrate.py ĐỊNH NGHĨA a = tỷ lệ
+         ngày nghỉ — nên "pi_Rest ≈ a" là hệ quả của định nghĩa, không phải kiểm chứng
+         độc lập của a (xem identify.py).
 """
 
 from __future__ import annotations
@@ -296,7 +298,7 @@ def run_gamma_sensitivity(
 # ---------------------------------------------------------------------------
 # 3. Kiểm chứng Xích Markov 3 trạng thái khả dụng từ chuỗi lịch trực M3
 # ---------------------------------------------------------------------------
-def analyze_availability_markov_chain(repo_root: Path = ROOT) -> dict[str, Any]:
+def analyze_availability_markov_chain(repo_root: Path = ROOT, a: float | None = None) -> dict[str, Any]:
     """Ước lượng ma trận chuyển trạng thái P (3x3) trên {'Rest (-)', 'Day (M/A)', 'Night (N)'},
     tính phân phối dừng pi, SLEM |lambda_2| và thời gian trộn Total Variation."""
     m3_path = repo_root / "data" / "processed" / "m3_real_strings.json"
@@ -310,15 +312,21 @@ def analyze_availability_markov_chain(repo_root: Path = ROOT) -> dict[str, Any]:
         return 2  # 'N'
 
     counts = np.zeros((3, 3), dtype=int)
-    if m3_path.exists():
-        m3_data = json.loads(m3_path.read_text(encoding="utf-8"))
-        for seq in m3_data.get("strings", {}).values():
-            for t in range(len(seq) - 1):
-                s_curr = _map_state(seq[t])
-                s_next = _map_state(seq[t + 1])
-                counts[s_curr, s_next] += 1
-    else:
-        counts = np.array([[1145, 241, 98], [248, 62, 18], [91, 25, 16]], dtype=int)
+    if not m3_path.exists():
+        # Tuần 12: bỏ ma trận đếm dựng sẵn (không lấy từ dữ liệu nào) từng dùng làm
+        # fallback — không có dữ liệu thì dừng, không in ra số liệu bịa.
+        raise SystemExit(
+            f"[m4_perturbation] Thiếu {m3_path.relative_to(repo_root)} — chạy "
+            "`python run_all.py --stage m3` trước. Không dùng số đếm giả."
+        )
+    m3_data = json.loads(m3_path.read_text(encoding="utf-8"))
+    for seq in m3_data.get("strings", {}).values():
+        for t in range(len(seq) - 1):
+            s_curr = _map_state(seq[t])
+            s_next = _map_state(seq[t + 1])
+            counts[s_curr, s_next] += 1
+    if a is None:
+        a = float(load_or_fit_params(repo_root)["a"])
 
     # Laplace smoothing cực nhỏ nếu có hàng bằng 0 (trên dữ liệu thật mọi hàng > 0)
     row_sums = counts.sum(axis=1, keepdims=True)
@@ -370,8 +378,10 @@ def analyze_availability_markov_chain(repo_root: Path = ROOT) -> dict[str, Any]:
         "tv_distance_trajectory": tv_history,
         "consistency_with_m4_decay_a": {
             "stationary_rest_prob_pi_0": round(float(pi[0]), 6),
-            "calibrated_decay_a": 0.760528,
-            "abs_difference": round(abs(float(pi[0]) - 0.760528), 6),
+            "calibrated_decay_a": round(float(a), 6),
+            "abs_difference": round(abs(float(pi[0]) - float(a)), 6),
+            "note": ("a được định nghĩa = tỷ lệ ngày nghỉ trên cùng các chuỗi, nên pi_Rest ≈ a "
+                     "là hệ quả định nghĩa, không phải kiểm chứng độc lập."),
         },
     }
 
@@ -487,7 +497,7 @@ def run_all_perturbation_analyses(
         fatigue_impulse=0.85,
     )
     sens_res = run_gamma_sensitivity(params=params, calib=calib)
-    markov_res = analyze_availability_markov_chain(ROOT)
+    markov_res = analyze_availability_markov_chain(ROOT, a=float(calib["a"]))
 
     fig_path = OUT_DIR / "perturbation_recovery.png"
     plot_perturbation_and_sensitivity(pert_res, sens_res, f_star, fig_path)
@@ -531,7 +541,9 @@ def main() -> int:
     )
     print(
         f"  Xích Markov 3 trạng : Ergodic = {mc['ergodic_irreducible_aperiodic']} · "
-        f"pi_Rest = {mc['stationary_distribution_pi']['Rest (-)']:.6f} (khớp a = 0.760528) · "
+        f"pi_Rest = {mc['stationary_distribution_pi']['Rest (-)']:.6f} "
+        f"(a = {mc['consistency_with_m4_decay_a']['calibrated_decay_a']:.6f} được định nghĩa từ cùng dữ liệu "
+        f"— gần nhau do định nghĩa, không phải kiểm chứng) · "
         f"SLEM |lambda_2| = {mc['SLEM_abs_lambda_2']:.6f} · "
         f"tau_mix(1e-6) = {mc['mixing_time_tv_1e_6']} bước"
     )

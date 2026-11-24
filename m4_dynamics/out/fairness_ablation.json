@@ -1,0 +1,79 @@
+{
+  "n_ky": 60,
+  "chu_ky_xoay_vong": 6,
+  "F_sao": 1.16666667,
+  "luat": {
+    "OL": {
+      "luat": "OL",
+      "rang_buoc_cung_dat_moi_ky": true,
+      "tai_tich_luy_trai": 60,
+      "tai_tich_luy_jain": 0.907407,
+      "tai_tich_luy_trai_max_tu_ky_7": 60,
+      "tai_tich_luy_trai_ky_30_60": [
+        30,
+        60
+      ],
+      "F_raw_trai_cuoi": 2.000002,
+      "F_raw_tb_6_ky_cuoi_lech_F_sao_max": 1.6666705324450863,
+      "F_raw_bien_do_6_ky_cuoi_max": 0.0,
+      "F_eff_lech_F_sao_max_cuoi": 1.6666705065264347
+    },
+    "W": {
+      "luat": "W",
+      "rang_buoc_cung_dat_moi_ky": true,
+      "tai_tich_luy_trai": 0,
+      "tai_tich_luy_jain": 1.0,
+      "tai_tich_luy_trai_max_tu_ky_7": 1,
+      "tai_tich_luy_trai_ky_30_60": [
+        0,
+        0
+      ],
+      "F_raw_trai_cuoi": 0.442761,
+      "F_raw_tb_6_ky_cuoi_lech_F_sao_max": 2.4608630975198054e-06,
+      "F_raw_bien_do_6_ky_cuoi_max": 0.442761,
+      "F_eff_lech_F_sao_max_cuoi": 2.434944445850462e-06
+    },
+    "F": {
+      "luat": "F",
+      "rang_buoc_cung_dat_moi_ky": true,
+      "tai_tich_luy_trai": 2,
+      "tai_tich_luy_jain": 0.999955,
+      "tai_tich_luy_trai_max_tu_ky_7": 2,
+      "tai_tich_luy_trai_ky_30_60": [
+        2,
+        2
+      ],
+      "F_raw_trai_cuoi": 0.442761,
+      "F_raw_tb_6_ky_cuoi_lech_F_sao_max": 2.3912039457396617e-06,
+      "F_raw_bien_do_6_ky_cuoi_max": 0.442761,
+      "F_eff_lech_F_sao_max_cuoi": 2.415484013473801e-06
+    },
+    "W+F": {
+      "luat": "W+F",
+      "rang_buoc_cung_dat_moi_ky": true,
+      "tai_tich_luy_trai": 0,
+      "tai_tich_luy_jain": 1.0,
+      "tai_tich_luy_trai_max_tu_ky_7": 1,
+      "tai_tich_luy_trai_ky_30_60": [
+        0,
+        0
+      ],
+      "F_raw_trai_cuoi": 0.442761,
+      "F_raw_tb_6_ky_cuoi_lech_F_sao_max": 2.3940347353423874e-06,
+      "F_raw_bien_do_6_ky_cuoi_max": 0.442761,
+      "F_eff_lech_F_sao_max_cuoi": 2.3893302472099975e-06
+    }
+  },
+  "ty_le_trung_lich": {
+    "W_vs_W+F": 0.7037037037037037,
+    "F_vs_W+F": 0.9296296296296296,
+    "OL_vs_W+F": 0.7222222222222222
+  },
+  "W+F_tai_tao_rolling_horizon": true,
+  "ket_luan": {
+    "W_du_de_can_bang_tai": true,
+    "F_mot_minh_giu_trai_tai_bi_chan": true,
+    "F_raw_hoi_tu_ve_diem": false,
+    "F_raw_tb_chu_ky_ve_F_sao": true
+  }
+}

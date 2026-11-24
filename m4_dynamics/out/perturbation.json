@@ -3494,7 +3494,8 @@
     "consistency_with_m4_decay_a": {
       "stationary_rest_prob_pi_0": 0.752021,
       "calibrated_decay_a": 0.760528,
-      "abs_difference": 0.008507
+      "abs_difference": 0.008507,
+      "note": "a được định nghĩa = tỷ lệ ngày nghỉ trên cùng các chuỗi, nên pi_Rest ≈ a là hệ quả định nghĩa, không phải kiểm chứng độc lập."
     }
   },
   "plot": "m4_dynamics/out/perturbation_recovery.png"

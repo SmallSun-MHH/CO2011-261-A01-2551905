@@ -55,6 +55,16 @@ def _render_temporal_fallback(repo_root: Path) -> None:
     lt_info = reg_ilp.get("lich_that", {})
     ilp_info = reg_ilp.get("lich_ilp", {})
 
+    # Tuần 12: thiếu kết quả thật thì báo lỗi, không hiển thị số mặc định viết tay.
+    thieu = [t for t, d in (("m3_automata/out/product_report.json", prod_report),
+                            ("m3_automata/out/regular_ilp.json", reg_ilp),
+                            ("data/processed/m3_calibration.json", calib_m3),
+                            ("data/processed/m3_real_strings.json", real_strings_data)) if not d]
+    if thieu:
+        st.error("Thiếu kết quả M3: " + ", ".join(f"`{t}`" for t in thieu)
+                 + ". Chạy `python run_all.py --stage m3` rồi tải lại trang.")
+        return
+
     n_min = int(st_info.get("toi_thieu", 155))
     n_reach = int(st_info.get("tich_dat_toi", 3108))
     n_theory = int(st_info.get("tich_ly_thuyet", 8352))
@@ -222,9 +232,7 @@ def main() -> None:
     m3_prod = _load_json_safe(ROOT / "m3_automata" / "out" / "product_report.json")
     m4_sim = _load_json_safe(ROOT / "m4_dynamics" / "out" / "simulation.json")
 
-    m2_obj_txt = f"t*={m2_sol.get('t_star', 2)}, Obj={float(m2_sol.get('objective', 3.99)):.2f}"
-    m3_st_txt = f"{m3_prod.get('so_trang_thai', {}).get('toi_thieu', 155)}-state DFA"
-    m4_err = float(m4_sim.get("equilibrium_verification", {}).get("max_abs_err_to_F_star", 2.33e-6))
+    m1_core = _load_json_safe(ROOT / "m1_logic" / "out" / "unsat_core.json")
 
     # ---- Sidebar thông tin dự án & trạng thái 5 Module ----
     with st.sidebar:
@@ -240,11 +248,28 @@ def main() -> None:
         )
         st.markdown("---")
         st.markdown("### ✅ Trạng thái Pipeline M1–M5")
-        st.success("M1 Logic (SAT & MUS): ĐẠT (18/18)")
-        st.success(f"M2 ILP (CP-SAT 2 pha): ĐẠT ({m2_obj_txt})")
-        st.success(f"M3 Automata ({m3_st_txt}): ĐẠT")
-        st.success(f"M4 Dynamics (F* = 7/6): ĐẠT ({m4_err:.2e})")
-        st.info("M5 Web App (Streamlit): Đang chạy")
+        # Tuần 12: trạng thái suy từ file kết quả có thật, không ghi cứng "ĐẠT".
+        if m1_core:
+            st.success("M1 Logic (SAT & MUS): có kết quả `m1_logic/out/unsat_core.json`")
+        else:
+            st.warning("M1: chưa có kết quả — chạy `run_all.py --stage m1`")
+        if m2_sol:
+            st.success(f"M2 ILP (CP-SAT 2 pha): t*={m2_sol.get('t_star')}, "
+                       f"Obj={m2_sol.get('objective')}")
+        else:
+            st.warning("M2: chưa có `m2_ilp/out/solution.json`")
+        if m3_prod:
+            st.success(f"M3 Automata: DFA tối thiểu "
+                       f"{m3_prod.get('so_trang_thai', {}).get('toi_thieu')} trạng thái")
+        else:
+            st.warning("M3: chưa có `m3_automata/out/product_report.json`")
+        eq_m4 = m4_sim.get("equilibrium_verification", {})
+        if eq_m4:
+            st.success(f"M4 Dynamics: max|F−F*| = {float(eq_m4.get('max_abs_err_to_F_star', float('nan'))):.2e} "
+                       f"(F* = l̄ do chuẩn hoá; a là quy ước — xem identify.py)")
+        else:
+            st.warning("M4: chưa có `m4_dynamics/out/simulation.json`")
+        st.info("M5 Web App (Streamlit): đang chạy")
 
     st.title("📅 Hệ thống Tối ưu hóa & Điều khiển Phân công Giám thị (M1–M5)")
     st.markdown(

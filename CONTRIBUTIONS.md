@@ -46,6 +46,7 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 | 4.3 | `m4_dynamics/rolling_horizon.py` | 2551905 Tran Anh Khoi, 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Task 18: Vòng lặp đóng $N=60$ kỳ gọi `solve_week(params, lambdas)` đạt spread = 0, Jain = 1.0000 |
 | 4.3 | `m4_dynamics/simulate.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu | 2551905 Tran Anh Khoi | Task 19 (Autograder 5đ): Hội tụ $|F_{i,60}-F^*| = 3.30\times 10^{-7} < 10^{-3}$, xuất 2 biểu đồ |
 | 4.4 | `m4_dynamics/perturbation.py`, `tools/check_m4.py` | 2551905 Tran Anh Khoi | 2551905 Tran Anh Khoi | **Task 20 (Khôi Lead)**: Nhiễu loạn nghỉ ốm, thời gian hồi phục $\tau_{\text{rec}}=20$ kỳ, độ nhạy $\gamma$, Xích Markov 3 trạng thái & cổng kiểm định `check_m4.py` |
+| 4.1–4.4 | `m4_dynamics/identify.py`, `fairness_ablation.py` (Task 18 + luan diem cong bang); ra soat trung thuc `calibrate.py`, `recurrence.py`, `perturbation.py`; `tools/check_m4.py` muc 7 | 2551918 Nguyen Phong Phu | (dien) | Tuan 12: gioi han nhan dang (a, b, r), F* = l_bar la dang thuc, bo ma tran dem Markov dung san; xem `m4_dynamics/README.md` §6 |
 
 ## Module 5 — Interactive Application & Integration (yeu cau 5.1–5.2)
 
@@ -56,6 +57,9 @@ Cot "%" va "Signature" do tung thanh vien tu dien va tu ky.
 | 5.2 | `app/views/plan.py` | 2551905 Tran Anh Khoi, 2551909 Tran Bui Bao Long | 2551905 Tran Anh Khoi | Task 23: Tab 1 (M1 SAT/MUS + M2 CP-SAT vs Baseline + What-if Solver trực tiếp) |
 | 5.2 | `app/views/temporal.py` | 2551907 Tran Tuan Kiet | 2551905 Tran Anh Khoi | **Task 24 (chừa lại để Kiệt nộp PR)**; `app/app.py` tích hợp sẵn `_render_temporal_fallback()` |
 | 5.2 | `app/views/dynamics.py` | 2551905 Tran Anh Khoi, 2551918 Nguyen Phong Phu, 2551920 Nguyen Quang Phuc | 2551905 Tran Anh Khoi | Task 25: Tab 3 (Quỹ đạo hội tụ $F^*$, công bằng Jain/Gini, nhiễu loạn, Xích Markov & simulator tương tác) |
+| 5.1–5.2 | `app/__init__.py`; chan so mac dinh viet tay trong `app/app.py`, `plan.py`, `dynamics.py`; kiem import trong `run_all.py --stage m5` | 2551918 Nguyen Phong Phu | (dien) | Tuan 12: truoc do `streamlit run app/app.py` sap ngay khi mo ("'app' is not a package") |
+
+Luu y tuan 12: o M4–M5, Khoi vua la Primary owner vua la Reviewer cua chinh file minh — chua dat quy uoc "Reviewer khac nguoi viet". Thanh vien nao THUC SU doc va chay kiem chung thi tu dien ten vao cot Reviewer.
 
 Cot Reviewer ghi nguoi DA THUC SU doc code, chay kiem chung va duyet (Khoi `2551905` ra soat toan bo M2–M3 ngay 08/11/2026, M4–M5 ngay 15/11/2026 va ra soat khoa so M4/dong bo M5 ngay 22/11/2026).
 

@@ -206,6 +206,112 @@ def main() -> int:
     else:
         err("Thiếu tệp m4_dynamics/out/perturbation.json")
 
+    # 7. Kiểm định tính trung thực (tuần 12). Các mục 3–6 phần lớn đúng theo cách dựng
+    #    (F* = l̄ do b được giải từ chính ràng buộc đó), nên cần thêm các phép thử có thể HỎNG.
+    print("  --- Kiểm định trung thực (tuần 12) ---")
+    import inspect
+    import io
+    import tempfile
+    import tokenize
+
+    # 7a. Không còn hằng số a viết tay trong mã M4 (chỉ được đọc từ m4_params.json)
+    lit = []
+    for py in sorted(m4_dir.glob("*.py")):
+        if py.name == "identify.py":  # dùng 0.760528 như MỘT điểm thử của đẳng thức F* = l̄
+            continue
+        toks = tokenize.generate_tokens(io.StringIO(py.read_text(encoding="utf-8")).readline)
+        lit += [f"{py.name}:{t.start[0]}" for t in toks if t.type == tokenize.NUMBER and t.string.startswith("0.7605")]
+    if lit:
+        err(f"Còn hằng số a = 0.7605… viết tay trong mã (phải đọc từ m4_params.json): {', '.join(lit)}")
+    else:
+        ok("Không còn hằng số a viết tay trong m4_dynamics/*.py — a chỉ đến từ m4_params.json")
+
+    # 7b. Thiếu dữ liệu thì Xích Markov phải DỪNG, không dùng số đếm dựng sẵn
+    try:
+        from m4_dynamics.perturbation import analyze_availability_markov_chain
+        with tempfile.TemporaryDirectory() as td:
+            try:
+                analyze_availability_markov_chain(Path(td), a=0.5)
+                err("analyze_availability_markov_chain vẫn trả kết quả khi KHÔNG có m3_real_strings.json (số liệu giả)")
+            except SystemExit:
+                ok("Thiếu m3_real_strings.json thì Xích Markov dừng hẳn (không còn ma trận đếm dựng sẵn)")
+    except Exception as exc:
+        err(f"Không kiểm được nhánh thiếu dữ liệu của Xích Markov: {exc}")
+
+    # 7c. Số đếm chuyển trạng thái trong perturbation.json = đếm lại độc lập từ dữ liệu
+    m3s = ROOT / "data" / "processed" / "m3_real_strings.json"
+    if pert_path.exists() and m3s.exists():
+        loai = lambda ch: 0 if ch == "-" else (1 if ch in ("M", "A") else 2)
+        dem = [[0] * 3 for _ in range(3)]
+        for chuoi in json.loads(m3s.read_text(encoding="utf-8")).get("strings", {}).values():
+            for x, y in zip(chuoi, chuoi[1:]):
+                dem[loai(x)][loai(y)] += 1
+        da_ghi = json.loads(pert_path.read_text(encoding="utf-8")).get("availability_markov_chain", {}).get("transition_counts")
+        if da_ghi == dem:
+            ok(f"Ma trận đếm chuyển trạng thái khớp đếm lại độc lập từ dữ liệu thật ({sum(map(sum, dem))} bước chuyển)")
+        else:
+            err(f"Ma trận đếm trong perturbation.json {da_ghi} ≠ đếm lại từ dữ liệu {dem}")
+    else:
+        warn("Không đối chiếu được ma trận đếm Xích Markov (thiếu perturbation.json hoặc m3_real_strings.json)")
+
+    # 7d. Demo ILP trong recurrence.py dùng tham số hiệu chỉnh, không có mặc định a=0.8/b=1.0
+    try:
+        from m4_dynamics import recurrence as _rec
+        co_mac_dinh = [f"{fn}.{ten}" for fn in ("vong_kin", "quet_mu")
+                       for ten, ts in inspect.signature(getattr(_rec, fn)).parameters.items()
+                       if ten in ("a", "b", "r", "r_rho") and ts.default is not inspect.Parameter.empty]
+        if co_mac_dinh:
+            err(f"Demo ILP còn tham số mặc định khác mô hình báo cáo: {co_mac_dinh}")
+        else:
+            ok("vong_kin/quet_mu bắt buộc nhận (a, b, r) — main() truyền đúng giá trị từ m4_params.json")
+    except Exception as exc:
+        err(f"Không kiểm được chữ ký vong_kin/quet_mu: {exc}")
+
+    # 7e. Giới hạn nhận dạng tham số đã được đo và công bố (identify.py)
+    idf = m4_dir / "out" / "identify.json"
+    if idf.exists():
+        d = json.loads(idf.read_text(encoding="utf-8"))
+        xd = d.get("xac_dinh_a", {})
+        hu = d.get("hieu_ung_met_moi", {}).get("tai_mle", {})
+        dt = d.get("dang_thuc_F_sao_bang_l_bar", {})
+        if ("a_calibrate_trong_vung_95" in xd and xd.get("vung_tin_cay_95") and "p" in hu
+                and float(dt.get("lech_lon_nhat", 1)) < 1e-9):
+            ok(
+                f"identify.json: F* = l̄ là đẳng thức (lệch {float(dt['lech_lon_nhat']):.1e} trên {len(dt.get('cac_thu', []))} cặp a, r); "
+                f"vùng 95% của a = {xd['vung_tin_cay_95']}, a đang dùng "
+                f"{'trong' if xd['a_calibrate_trong_vung_95'] else 'NGOÀI'} vùng (Δℓ = {xd['delta_loglik_a_calibrate']:+.2f}); "
+                f"hiệu ứng ngày trước β = {hu.get('beta'):.3f} (p = {hu.get('p'):.3f})"
+            )
+        else:
+            err("identify.json thiếu một trong: đẳng thức F* = l̄, vùng tin cậy 95% của a, kiểm định hiệu ứng")
+    else:
+        err("Thiếu m4_dynamics/out/identify.json — chạy python m4_dynamics/identify.py")
+
+    # 7f. Luận điểm công bằng: luật nào cân bằng tải, và mệt mỏi THẬT có hội tụ về điểm không
+    fa = m4_dir / "out" / "fairness_ablation.json"
+    if fa.exists():
+        d = json.loads(fa.read_text(encoding="utf-8"))
+        L = d.get("luat", {})
+        if d.get("W+F_tai_tao_rolling_horizon") is not True:
+            err("fairness_ablation: luật W+F KHÔNG tái tạo được chuỗi tải của rolling_horizon.json — phép so sánh vô nghĩa")
+        elif not all(L.get(k, {}).get("rang_buoc_cung_dat_moi_ky") for k in ("OL", "W", "F", "W+F")):
+            err("fairness_ablation: có luật vi phạm ràng buộc cứng")
+        else:
+            ok(f"Ablation công bằng (60 kỳ): trải tải tích luỹ OL={L['OL']['tai_tich_luy_trai']}, "
+               f"W={L['W']['tai_tich_luy_trai']}, F={L['F']['tai_tich_luy_trai']} (max {L['F']['tai_tich_luy_trai_max_tu_ky_7']} từ kỳ 7), "
+               f"W+F={L['W+F']['tai_tich_luy_trai']}; W+F tái tạo đúng rolling_horizon.json")
+            bd = float(L["W+F"]["F_raw_bien_do_6_ky_cuoi_max"])
+            ok(f"Mệt mỏi thật F_raw về quỹ đạo chu kỳ 6 (biên độ {bd:.3f}), trung bình chu kỳ lệch F* "
+               f"{float(L['W+F']['F_raw_tb_6_ky_cuoi_lech_F_sao_max']):.1e} — 'hội tụ < 1e-3' là của mệt mỏi trung bình chu kỳ")
+    else:
+        err("Thiếu m4_dynamics/out/fairness_ablation.json — chạy python m4_dynamics/fairness_ablation.py")
+
+    par = ROOT / "data" / "processed" / "m4_params.json"
+    if par.exists() and json.loads(par.read_text(encoding="utf-8")).get("calibration_note"):
+        ok("m4_params.json ghi rõ: a là quy ước, F* = l̄ là ràng buộc chuẩn hoá (không phải bằng chứng khớp dữ liệu)")
+    else:
+        err("m4_params.json thiếu calibration_note — đừng trình bày F* = l̄ như kết quả khớp dữ liệu")
+
     print("-" * 74)
     print(f"TỔNG KẾT MODULE 4: {passed} ĐẠT · {warned} CẢNH BÁO · {failed} HỎNG")
     print("=" * 74)
