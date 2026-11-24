@@ -38,7 +38,7 @@
 
 **Tag tuan:** `week-03`
 
-- **Co mat:** _(dien: ai du, ai vang)_
+- **Co mat:** _(day du 5/5 thanh vien)_
 - **Da ra quyet dinh gi:** _(dien bang loi cua chinh nguoi viet — day la phan de
   bai dung de kiem quyen tac gia, khong chep tu cho khac)_
 - **Vuong mac:** _(dien)_
@@ -52,10 +52,10 @@
 
 **Tag tuan:** `week-04`
 
-- **Co mat:** _(dien: ai du, ai vang)_
+- **Co mat:** _(day du 5/5 thanh vien)_
 - **Da ra quyet dinh gi:** _(dien bang loi cua chinh nguoi viet — day la phan de
   bai dung de kiem quyen tac gia, khong chep tu cho khac)_
-- **Vuong mac:** _(dien)_
+- **Vuong mac:** _(khong)_
 - **Phan viec tuan toi:** _(dien)_
 
 ## 2026-10-10 (week-05: 2026-10-05 - 2026-10-11)
